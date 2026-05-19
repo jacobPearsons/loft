@@ -1,0 +1,83 @@
+import { NextRequest, NextResponse } from "next/server"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
+import { db } from "@/lib/db"
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const { searchParams } = new URL(request.url)
+  const email = searchParams.get("email")
+
+  const userEmail = email || (await getServerSession(authOptions))?.user?.email
+  
+  if (!userEmail) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
+  const applicationId = parseInt(params.id)
+  const { status } = await request.json()
+
+  const validStatuses = ["PENDING", "REVIEWING", "SHORTLISTED", "INTERVIEW", "OFFERED", "HIRED", "REJECTED"]
+  
+  if (!validStatuses.includes(status)) {
+    return NextResponse.json({ error: "Invalid status" }, { status: 400 })
+  }
+
+  // Get application with job info
+  const application = await db.jobApplication.findUnique({
+    where: { id: applicationId },
+    include: {
+      user: true,
+      job: true,
+    },
+  })
+
+  if (!application) {
+    return NextResponse.json({ error: "Application not found" }, { status: 404 })
+  }
+
+  // Verify employer owns the job
+  const user = await db.user.findUnique({
+    where: { email: userEmail as string },
+  })
+
+  if (application.job.employerId !== user?.clerkId) {
+    return NextResponse.json({ error: "Not authorized" }, { status: 403 })
+  }
+
+  const updatedApplication = await db.jobApplication.update({
+    where: { id: applicationId },
+    data: { 
+      status,
+      reviewedAt: status === "REVIEWING" || status === "SHORTLISTED" ? new Date() : application.reviewedAt,
+      interviewAt: status === "INTERVIEW" ? new Date() : application.interviewAt,
+      acceptedAt: status === "HIRED" ? new Date() : application.acceptedAt,
+      rejectedAt: status === "REJECTED" ? new Date() : application.rejectedAt,
+    },
+  })
+
+  // Create notification for job seeker
+  const notificationType = status === "REJECTED" ? "APPLICATION_REJECTED" : "APPLICATION_SHORTLISTED"
+  
+  await db.notification.create({
+    data: {
+      userId: application.userId,
+      title: "Application Status Update",
+      message: `Your application for ${application.job.title} is now ${status.toLowerCase()}`,
+      type: notificationType,
+      link: `/dashboard/applications/${application.id}`,
+    },
+  })
+
+  return NextResponse.json({
+    success: true,
+    application: {
+      id: updatedApplication.id,
+      status: updatedApplication.status,
+      reviewedAt: updatedApplication.reviewedAt,
+      interviewAt: updatedApplication.interviewAt,
+    },
+  })
+}
