@@ -27,7 +27,11 @@ yarn-error.log*
 
 # local env files
 .env
-.env*.local
+.env.local
+.env.production
+
+# Supabase
+# Supabase credentials should never be committed
 
 # vercel
 .vercel
