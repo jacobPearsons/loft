@@ -26,13 +26,13 @@ export default function Navbar() {
             <Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">Pricing</Link>
           </li>
           <li>
-            <Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">Clients</Link>
+            <Link href="/employer" className="text-muted-foreground hover:text-foreground transition-colors">Employers</Link>
           </li>
           <li>
-            <Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">Resources</Link>
+            <Link href="/contact-us" className="text-muted-foreground hover:text-foreground transition-colors">Contact Us</Link>
           </li>
           <li>
-            <Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">Documentation</Link>
+            <Link href="/about-us" className="text-muted-foreground hover:text-foreground transition-colors">About Us</Link>
           </li>
           <li>
             <Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">Enterprise</Link>
@@ -44,7 +44,7 @@ export default function Navbar() {
           <>
             {isAuthenticated ? (
               <>
-                <Link href={session.user.isEmployer ? "/employer/dashboard" : "/dashboard"}>
+                <Link href={(session.user as any).isEmployer ? "/employer/dashboard" : "/dashboard"}>
                   <Button variant="ghost">Dashboard</Button>
                 </Link>
                 <div className="flex items-center gap-2">
