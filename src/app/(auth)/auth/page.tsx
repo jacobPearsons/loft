@@ -58,12 +58,12 @@ export default function AuthPage() {
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">
       {/* Left Panel - Visual/Branding */}
-      <div className="relative hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 overflow-hidden">
+      <div className="relative hidden lg:flex lg:w-1/2 bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-900 overflow-hidden">
         {/* Animated Background */}
         <div className="absolute inset-0">
-          <div className="absolute top-1/4 -left-40 w-80 h-80 bg-blue-400/30 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute bottom-1/4 -right-40 w-96 h-96 bg-blue-300/20 rounded-full blur-3xl animate-pulse delay-1000" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl" />
+          <div className="absolute top-1/4 -left-40 w-80 h-80 bg-emerald-400/30 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute bottom-1/4 -right-40 w-96 h-96 bg-emerald-300/20 rounded-full blur-3xl animate-pulse delay-1000" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl" />
         </div>
 
         {/* Grid Pattern Overlay */}
@@ -86,7 +86,7 @@ export default function AuthPage() {
             <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">
               Your Career Journey<br />Starts Here
             </h1>
-            <p className="text-blue-100 text-lg md:text-xl max-w-md mx-auto">
+            <p className="text-emerald-100 text-lg md:text-xl max-w-md mx-auto">
               Connect with top employers and find your dream job in minutes
             </p>
           </motion.div>
@@ -106,9 +106,9 @@ export default function AuthPage() {
                 transition={{ duration: 0.4, delay: 0.3 + index * 0.1 }}
                 className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-4 hover:bg-white/20 transition-colors"
               >
-                <feature.icon className="w-6 h-6 mb-2 text-blue-200" />
+                <feature.icon className="w-6 h-6 mb-2 text-emerald-200" />
                 <h3 className="font-semibold text-sm">{feature.title}</h3>
-                <p className="text-blue-100 text-xs mt-1">{feature.description}</p>
+                <p className="text-emerald-100 text-xs mt-1">{feature.description}</p>
               </motion.div>
             ))}
           </motion.div>
@@ -122,15 +122,15 @@ export default function AuthPage() {
           >
             <div>
               <div className="text-3xl font-bold">10K+</div>
-              <div className="text-blue-200 text-sm">Active Jobs</div>
+              <div className="text-emerald-200 text-sm">Active Jobs</div>
             </div>
             <div>
               <div className="text-3xl font-bold">5K+</div>
-              <div className="text-blue-200 text-sm">Companies</div>
+              <div className="text-emerald-200 text-sm">Companies</div>
             </div>
             <div>
               <div className="text-3xl font-bold">50K+</div>
-              <div className="text-blue-200 text-sm">Job Seekers</div>
+              <div className="text-emerald-200 text-sm">Job Seekers</div>
             </div>
           </motion.div>
         </div>
@@ -167,7 +167,7 @@ export default function AuthPage() {
 
           {/* Footer */}
           <p className="text-center text-muted-foreground text-xs mt-8">
-            © 2024 WorkForce. All rights reserved.
+            © 2024 LoftCommunity. All rights reserved.
           </p>
         </motion.div>
       </div>

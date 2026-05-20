@@ -175,7 +175,7 @@ export function LoginForm({ onSwitchToRegister, onSwitchToResetPassword }: Login
             <button
               type="button"
               onClick={onSwitchToRegister}
-              className="text-blue-600 hover:underline font-medium"
+              className="text-emerald-500 hover:underline font-medium"
             >
               Create Account
             </button>
