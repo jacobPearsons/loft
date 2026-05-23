@@ -9,11 +9,14 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { signIn } from 'next-auth/react'
+import { signIn, getSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { motion } from 'framer-motion'
 import { Loader2 } from 'lucide-react'
+
+const AUTH_STORAGE_KEY = 'Loft Community_auth'
+const AUTH_TOKEN_KEY = 'Loft Community_token'
 
 interface RegisterFormProps {
   onSwitchToLogin?: () => void
@@ -28,7 +31,6 @@ export function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
     confirmPassword: '',
     firstName: '',
     lastName: '',
-    role: '',
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -53,13 +55,8 @@ export function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
     e.preventDefault()
     setError('')
 
-    if (!formData.email || !formData.password || !formData.firstName || !formData.lastName || !formData.role) {
+    if (!formData.email || !formData.password || !formData.firstName || !formData.lastName) {
       setError('Please fill in all required fields')
-      return
-    }
-
-    if (!formData.role) {
-      setError('Please select your account type')
       return
     }
 
@@ -85,7 +82,6 @@ export function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
           password: formData.password,
           firstName: formData.firstName,
           lastName: formData.lastName,
-          role: formData.role === 'employer' ? 'EMPLOYER' : 'JOB_SEEKER',
         }),
       })
 
@@ -107,6 +103,26 @@ export function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
       if (signInResult?.error) {
         setError('Registration successful but login failed. Please try signing in.')
       } else {
+        const session = await getSession()
+        if (session?.user) {
+          const nameParts = (session.user.name || '').split(' ')
+          const authUser = {
+            id: session.user.id,
+            email: session.user.email || '',
+            firstName: formData.firstName || nameParts[0] || '',
+            lastName: formData.lastName || nameParts.slice(1).join(' ') || '',
+            name: session.user.name || `${formData.firstName} ${formData.lastName}`,
+            profileImage: session.user.image || undefined,
+            role: 'job_seeker' as const,
+            isVerified: true,
+            tier: 'Free',
+            credits: '10',
+            createdAt: new Date(),
+          }
+          localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authUser))
+          localStorage.setItem(AUTH_TOKEN_KEY, `session_${session.user.id}`)
+        }
+        localStorage.setItem('pendingOnboarding', 'true')
         router.push('/onboarding/role-selection')
       }
     } catch (err) {
@@ -136,43 +152,6 @@ export function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
               {error}
             </div>
           )}
-
-          {/* Role Selection */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">
-              I am a <span className="text-destructive">*</span>
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => handleChange('role', 'employer')}
-                className={`p-4 rounded-lg border-2 transition-all text-left ${
-                  formData.role === 'employer'
-                    ? 'border-emerald-500 bg-emerald-500/10'
-                    : 'border-border hover:border-emerald-500/50'
-                }`}
-              >
-                <div className="font-medium text-foreground">Employer</div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  Hiring talent
-                </div>
-              </button>
-              <button
-                type="button"
-                onClick={() => handleChange('role', 'job_seeker')}
-                className={`p-4 rounded-lg border-2 transition-all text-left ${
-                  formData.role === 'job_seeker'
-                    ? 'border-emerald-500 bg-emerald-500/10'
-                    : 'border-border hover:border-emerald-500/50'
-                }`}
-              >
-                <div className="font-medium text-foreground">Job Seeker</div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  Looking for work
-                </div>
-              </button>
-            </div>
-          </div>
 
           {/* Name Fields */}
           <div className="grid grid-cols-2 gap-3">

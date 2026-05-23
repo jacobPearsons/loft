@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { db } from "@/lib/db"
+import { CompanySize } from "@prisma/client"
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
@@ -46,12 +47,14 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
   }
 
+  const sizeEnum = size as CompanySize
+
   const profile = await db.employerProfile.upsert({
     where: { userId: user.clerkId },
     update: { 
       companyName, 
       industry, 
-      size, 
+      companySize: sizeEnum, 
       description, 
       companyWebsite: website, 
       city, 
@@ -61,7 +64,7 @@ export async function PATCH(request: NextRequest) {
       userId: user.clerkId,
       companyName,
       industry,
-      size,
+      companySize: sizeEnum,
       description,
       companyWebsite: website,
       city,

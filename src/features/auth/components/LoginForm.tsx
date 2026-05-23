@@ -8,11 +8,14 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { signIn } from 'next-auth/react'
+import { signIn, getSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { motion } from 'framer-motion'
 import { Loader2 } from 'lucide-react'
+
+const AUTH_STORAGE_KEY = 'Loft Community_auth'
+const AUTH_TOKEN_KEY = 'Loft Community_token'
 
 interface LoginFormProps {
   onSwitchToRegister?: () => void
@@ -49,6 +52,25 @@ export function LoginForm({ onSwitchToRegister, onSwitchToResetPassword }: Login
     if (result?.error) {
       setError(result.error)
     } else {
+      const session = await getSession()
+      if (session?.user) {
+        const nameParts = (session.user.name || session.user.email || '').split(' ')
+        const authUser = {
+          id: session.user.id,
+          email: session.user.email || '',
+          firstName: nameParts[0] || '',
+          lastName: nameParts.slice(1).join(' ') || '',
+          name: session.user.name || session.user.email || '',
+          profileImage: session.user.image || undefined,
+          role: (session.user as any).isEmployer ? 'employer' as const : 'job_seeker' as const,
+          isVerified: true,
+          tier: 'Free',
+          credits: '10',
+          createdAt: new Date(),
+        }
+        localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authUser))
+        localStorage.setItem(AUTH_TOKEN_KEY, `session_${session.user.id}`)
+      }
       router.push('/dashboard')
     }
   }
@@ -171,7 +193,7 @@ export function LoginForm({ onSwitchToRegister, onSwitchToResetPassword }: Login
 
         <div className="mt-6 text-center">
           <p className="text-sm text-muted-foreground">
-            Don't have an account?{' '}
+            Do not have an account?{' '}
             <button
               type="button"
               onClick={onSwitchToRegister}

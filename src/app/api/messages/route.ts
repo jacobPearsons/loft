@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { db } from "@/lib/db"
+import { sendEmail, emailTemplates, shouldSendEmail } from "@/lib/email"
 
 // GET /api/messages - Get conversations
 export async function GET(request: NextRequest) {
@@ -110,16 +111,27 @@ export async function POST(request: NextRequest) {
     },
   })
 
+  const senderName = user.firstName || user.name || "Employer"
+
   // Create notification
   await db.notification.create({
     data: {
       userId: receiverId,
       title: "New Message",
-      message: `You have a new message from ${user.firstName || user.name || "Employer"}`,
+      message: `You have a new message from ${senderName}`,
       type: "MESSAGE",
       link: `/dashboard/messages`,
     },
   })
+
+  // Send email notification
+  const receiver = await db.user.findUnique({ where: { clerkId: receiverId } })
+  if (receiver?.email) {
+    const shouldNotify = await shouldSendEmail(receiverId, 'newMessages')
+    if (shouldNotify) {
+      await sendEmail(emailTemplates.newMessage(senderName, receiver.email))
+    }
+  }
 
   return NextResponse.json({
     success: true,

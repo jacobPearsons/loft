@@ -1,0 +1,709 @@
+[
+{
+      "id": "1",
+      "title": "Senior Software Engineer",
+      "company": "TechCorp Solutions",
+      "jobType": "Full-time",
+      "location": "Remote",
+      "salaryRange": "$80,000 - $120,000",
+      "description": "We are seeking a talented Senior Software Engineer to join our dynamic team. You will be responsible for developing scalable applications, mentoring junior developers, and contributing to architectural decisions. This role offers excellent growth opportunities and the chance to work with cutting-edge technologies.",
+      "requiredSkills": ["React", "Node.js", "TypeScript", "AWS", "MongoDB"],
+      "benefits": [
+        "Competitive salary and benefits package",
+        "Health, dental, and vision insurance",
+        "401(k) retirement plan with company matching",
+        "Flexible work hours",
+        "Professional development opportunities",
+        "Remote work setup allowance"
+      ],
+      "postedTime": "2 days ago",
+      "employer_id": "employer-1",
+      "status": "active",
+      "created_at": "2024-01-15T10:00:00Z"
+    },
+    {
+      "id": "2",
+      "title": "Marketing Manager",
+      "company": "Growth Dynamics",
+      "jobType": "Full-time",
+      "location": "Hybrid",
+      "salaryRange": "$65,000 - $85,000",
+      "description": "Lead our marketing initiatives and drive brand awareness. You'll develop and execute marketing strategies, manage campaigns, and analyze performance metrics to optimize results. This role offers excellent growth opportunities and the chance to work with cutting-edge marketing technologies.",
+      "requiredSkills": [
+        "Digital Marketing",
+        "SEO",
+        "Google Analytics",
+        "Content Strategy"
+      ],
+      "benefits": [
+        "Health insurance",
+        "Performance bonuses",
+        "Remote work options",
+        "Professional development",
+        "Team events and activities",
+        "Flexible PTO"
+      ],
+      "postedTime": "1 day ago",
+      "employer_id": "employer-2",
+      "status": "active",
+      "created_at": "2024-01-16T09:00:00Z"
+    },
+    {
+      "id": "3",
+      "title": "Marketing Consultant",
+      "company": "Growth Dynamics",
+      "jobType": "Full-time",
+      "location": "Remote",
+      "salaryRange": "$45,000 - $75,000",
+      "description": "Lead our marketing initiatives and drive brand awareness. You'll develop and execute marketing strategies, manage campaigns, and analyze performance metrics to optimize results. This role offers excellent growth opportunities and the chance to work with cutting-edge marketing technologies.",
+      "requiredSkills": [
+        "Strategic Event Planning",
+        "SEO",
+        "Microsoft Office",
+        "CRM Data Analysis"
+      ],
+      "benefits": [
+        "Health insurance",
+        "Performance bonuses",
+        "Remote work options",
+        "Professional development",
+        "Team events and activities",
+        "Flexible PTO"
+      ],
+      "postedTime": "2 days ago",
+      "employer_id": "employer-2",
+      "status": "active",
+      "created_at": "2024-01-15T14:00:00Z"
+    },
+    {
+      "id": "4",
+      "title": "Customer Service Agent",
+      "company": "Care Connect",
+      "jobType": "Part-time",
+      "location": "Remote",
+      "salaryRange": "$25,000 - $70,000",
+      "description": "Assist customers with product information and order support. We are seeking a talented individual to join our dynamic team and contribute to our continued success. This role offers excellent growth opportunities and the chance to work with cutting-edge customer service technologies.",
+      "requiredSkills": [
+        "Phone Support",
+        "Email Support",
+        "Product Knowledge",
+        "Documentation"
+      ],
+      "benefits": [
+        "Competitive salary and benefits package",
+        "Health, dental, and vision insurance",
+        "401(k) retirement plan with company matching",
+        "Flexible work arrangements",
+        "Professional development opportunities",
+        "Paid time off and holidays"
+      ],
+      "postedTime": "3 hours ago",
+      "employer_id": "employer-3",
+      "status": "active",
+      "created_at": "2024-01-17T15:00:00Z"
+    },
+    {
+      "id": "5",
+      "title": "Data Analyst",
+      "company": "Insight Analytics",
+      "jobType": "Full-time",
+      "location": "On-site",
+      "salaryRange": "$55,000 - $75,000",
+      "description": "Transform raw data into actionable insights. You'll analyze complex datasets, create reports, and provide recommendations to drive business decisions. This role offers excellent growth opportunities and the chance to work with cutting-edge analytics technologies.",
+      "requiredSkills": ["SQL", "Python", "Excel", "Tableau"],
+      "benefits": [
+        "Comprehensive benefits",
+        "Learning budget",
+        "Flexible PTO",
+        "Modern office",
+        "Team collaboration",
+        "Career advancement opportunities"
+      ],
+      "postedTime": "1 day ago",
+      "employer_id": "employer-4",
+      "status": "active",
+      "created_at": "2024-01-16T11:00:00Z"
+    },
+    {
+      "id": "6",
+      "title": "UX/UI Designer",
+      "company": "Creative Studios",
+      "jobType": "Contract",
+      "location": "Remote",
+      "salaryRange": "$70,000 - $90,000",
+      "description": "Create beautiful and functional user experiences. Design intuitive interfaces, conduct user research, and collaborate with development teams to bring designs to life. This role offers excellent growth opportunities and the chance to work with cutting-edge design technologies.",
+      "requiredSkills": [
+        "Figma",
+        "Adobe Creative Suite",
+        "User Research",
+        "Prototyping"
+      ],
+      "benefits": [
+        "Project-based bonuses",
+        "Remote work",
+        "Creative freedom",
+        "Latest tools",
+        "Portfolio building",
+        "Flexible schedule"
+      ],
+      "postedTime": "5 days ago",
+      "employer_id": "employer-5",
+      "status": "active",
+      "created_at": "2024-01-12T08:00:00Z"
+    },
+    {
+      "id": "7",
+      "title": "Sales Representative",
+      "company": "Revenue Builders",
+      "jobType": "Full-time",
+      "location": "Hybrid",
+      "salaryRange": "$45,000 - $65,000",
+      "description": "Drive revenue growth through strategic sales initiatives. Build relationships with prospects, conduct product demonstrations, and close deals. This role offers excellent growth opportunities and the chance to work with cutting-edge sales technologies.",
+      "requiredSkills": [
+        "Sales Techniques",
+        "CRM Management",
+        "Negotiation",
+        "Presentation"
+      ],
+      "benefits": [
+        "Commission structure",
+        "Health benefits",
+        "Sales training",
+        "Career advancement",
+        "Team incentives",
+        "Performance bonuses"
+      ],
+      "postedTime": "2 days ago",
+      "employer_id": "employer-6",
+      "status": "active",
+      "created_at": "2024-01-15T13:00:00Z"
+    },
+    {
+      "id": "8",
+      "title": "Online Tutor EduConnect",
+      "company": "Revenue Builders",
+      "jobType": "Full-time",
+      "location": "Remote",
+      "salaryRange": "$25,000 - $70,000",
+      "description": "Provide online tutoring in various subjects to students. We are seeking a talented individual to join our dynamic team and contribute to our continued success. This role offers excellent growth opportunities and the chance to work with cutting-edge technologies.",
+      "requiredSkills": [
+        "Teaching",
+        "Subject Expertise",
+        "Communication",
+        "Online Tools"
+      ],
+      "benefits": [
+        "Competitive salary and benefits package",
+        "Health, dental, and vision insurance",
+        "401(k) retirement plan with company matching",
+        "Flexible work arrangements",
+        "Paid time off and holidays",
+        "Professional development opportunities"
+      ],
+      "postedTime": "2 days ago",
+      "employer_id": "employer-6",
+      "status": "active",
+      "created_at": "2024-01-15T16:00:00Z"
+    },
+    {
+      "id": "9",
+      "title": "Customer Service Team Lead",
+      "company": "Service Excellence",
+      "jobType": "Full-time",
+      "location": "Remote",
+      "salaryRange": "$25,000 - $70,000",
+      "description": "Lead a team of customer service representatives and ensure quality service. We are seeking a talented individual to join our dynamic team and contribute to our continued success. This role offers excellent growth opportunities and the chance to work with cutting-edge technologies.",
+      "requiredSkills": [
+        "Leadership",
+        "Team Management",
+        "Customer Service",
+        "Training"
+      ],
+      "benefits": [
+        "Competitive salary and benefits package",
+        "Health, dental, and vision insurance",
+        "401(k) retirement plan with company matching",
+        "Flexible work arrangements",
+        "Paid time off and holidays",
+        "Professional development opportunities"
+      ],
+      "postedTime": "2 days ago",
+      "employer_id": "employer-7",
+      "status": "active",
+      "created_at": "2024-01-15T12:00:00Z"
+    },
+    {
+      "id": "10",
+      "title": "Customer Service Advisor",
+      "company": "Client First",
+      "jobType": "Contract",
+      "location": "Remote",
+      "salaryRange": "$25,000 - $70,000",
+      "description": "Provide expert advice and support to customers across multiple channels. We are seeking a talented individual to join our dynamic team and contribute to our continued success. This role offers excellent growth opportunities and the chance to work with cutting-edge technologies.",
+      "requiredSkills": [
+        "Advisory Skills",
+        "Technical Support",
+        "Cross-selling",
+        "Customer Retention"
+      ],
+      "benefits": [
+        "Competitive salary and benefits package",
+        "Health, dental, and vision insurance",
+        "401(k) retirement plan with company matching",
+        "Flexible work arrangements",
+        "Paid time off and holidays",
+        "Professional development opportunities"
+      ],
+      "postedTime": "2 days ago",
+      "employer_id": "employer-8",
+      "status": "active",
+      "created_at": "2024-01-15T10:30:00Z"
+    },
+    {
+      "id": "11",
+      "title": "Customer Service Associate",
+      "company": "Response Team",
+      "jobType": "Full-time",
+      "location": "Remote",
+      "salaryRange": "$25,000 - $70,000",
+      "description": "Handle customer complaints and provide solutions to enhance satisfaction. We are seeking a talented individual to join our dynamic team and contribute to our continued success. This role offers excellent growth opportunities and the chance to work with cutting-edge technologies.",
+      "requiredSkills": [
+        "Conflict Resolution",
+        "Customer Relations",
+        "Data Entry",
+        "Follow-up"
+      ],
+      "benefits": [
+        "Competitive salary and benefits package",
+        "Health, dental, and vision insurance",
+        "401(k) retirement plan with company matching",
+        "Flexible work arrangements",
+        "Paid time off and holidays",
+        "Professional development opportunities"
+      ],
+      "postedTime": "2 days ago",
+      "employer_id": "employer-9",
+      "status": "active",
+      "created_at": "2024-01-15T09:15:00Z"
+    },
+    {
+      "id": "12",
+      "title": "Customer Service Coordinator",
+      "company": "Support Hub",
+      "jobType": "Full-time",
+      "location": "Remote",
+      "salaryRange": "$25,000 - $70,000",
+      "description": "Coordinate customer service activities and maintain service quality standards. We are seeking a talented individual to join our dynamic team and contribute to our continued success. This role offers excellent growth opportunities and the chance to work with cutting-edge technologies.",
+      "requiredSkills": [
+        "Coordination",
+        "Quality Assurance",
+        "Process Improvement",
+        "Reporting"
+      ],
+      "benefits": [
+        "Competitive salary and benefits package",
+        "Health, dental, and vision insurance",
+        "401(k) retirement plan with company matching",
+        "Flexible work arrangements",
+        "Paid time off and holidays",
+        "Professional development opportunities"
+      ],
+      "postedTime": "2 days ago",
+      "employer_id": "employer-10",
+      "status": "active",
+      "created_at": "2024-01-15T14:45:00Z"
+    },
+    {
+      "id": "13",
+      "title": "Customer Service Consultant",
+      "company": "Expert Support",
+      "jobType": "Full-time",
+      "location": "Remote",
+      "salaryRange": "$25,000 - $70,000",
+      "description": "Provide specialized customer support and consultation services. We are seeking a talented individual to join our dynamic team and contribute to our continued success. This role offers excellent growth opportunities and the chance to work with cutting-edge technologies.",
+      "requiredSkills": [
+        "Consultation",
+        "Expert Knowledge",
+        "Problem Analysis",
+        "Solution Design"
+      ],
+      "benefits": [
+        "Competitive salary and benefits package",
+        "Health, dental, and vision insurance",
+        "401(k) retirement plan with company matching",
+        "Flexible work arrangements",
+        "Paid time off and holidays",
+        "Professional development opportunities"
+      ],
+      "postedTime": "2 days ago",
+      "employer_id": "employer-11",
+      "status": "active",
+      "created_at": "2024-01-15T11:20:00Z"
+    },
+    {
+      "id": "14",
+      "title": "Customer Service Manager",
+      "company": "Service Leaders",
+      "jobType": "Full-time",
+      "location": "Remote",
+      "salaryRange": "$25,000 - $70,000",
+      "description": "Manage customer service operations and drive customer satisfaction initiatives. We are seeking a talented individual to join our dynamic team and contribute to our continued success. This role offers excellent growth opportunities and the chance to work with cutting-edge technologies.",
+      "requiredSkills": [
+        "Management",
+        "Customer Experience",
+        "Strategy",
+        "Performance Metrics"
+      ],
+      "benefits": [
+        "Competitive salary and benefits package",
+        "Health, dental, and vision insurance",
+        "401(k) retirement plan with company matching",
+        "Flexible work arrangements",
+        "Paid time off and holidays",
+        "Professional development opportunities"
+      ],
+      "postedTime": "2 days ago",
+      "employer_id": "employer-12",
+      "status": "active",
+      "created_at": "2024-01-15T08:30:00Z"
+    },
+    {
+      "id": "15",
+      "title": "Customer Service Analyst",
+      "company": "Service Leaders",
+      "jobType": "Full-time",
+      "location": "Remote",
+      "salaryRange": "$25,000 - $70,000",
+      "description": "Analyze customer service data and provide insights for service improvement. We are seeking a talented individual to join our dynamic team and contribute to our continued success. This role offers excellent growth opportunities and the chance to work with cutting-edge technologies.",
+      "requiredSkills": [
+        "Customer Insights",
+        "Reporting",
+        "Data Analysis",
+        "Process Optimization"
+      ],
+      "benefits": [
+        "Competitive salary and benefits package",
+        "Health, dental, and vision insurance",
+        "401(k) retirement plan with company matching",
+        "Flexible work arrangements",
+        "Paid time off and holidays",
+        "Professional development opportunities"
+      ],
+      "postedTime": "2 days ago",
+      "employer_id": "employer-12",
+      "status": "active",
+      "created_at": "2024-01-15T13:15:00Z"
+    },
+    {
+      "id": "16",
+      "title": "DevOps Engineer",
+      "company": "Cloud Solutions",
+      "jobType": "Full-time",
+      "location": "Remote",
+      "salaryRange": "$90,000 - $130,000",
+      "description": "Build and maintain our cloud infrastructure and deployment pipelines. You'll work with cutting-edge technologies to ensure our applications are scalable, secure, and performant. This role offers excellent growth opportunities and the chance to work with the latest DevOps tools.",
+      "requiredSkills": ["Docker", "Kubernetes", "AWS", "CI/CD", "Linux"],
+      "benefits": [
+        "Competitive salary and benefits package",
+        "Health, dental, and vision insurance",
+        "401(k) retirement plan with company matching",
+        "Flexible work hours",
+        "Professional development opportunities",
+        "Remote work setup allowance"
+      ],
+      "postedTime": "1 week ago",
+      "employer_id": "employer-13",
+      "status": "active",
+      "created_at": "2024-01-10T10:00:00Z"
+    },
+    {
+      "id": "17",
+      "title": "Customer Service Analyst",
+      "company": "Service Leaders",
+      "jobType": "Full-time",
+      "location": "Remote",
+      "salaryRange": "$25,000 - $70,000",
+      "description": "Analyze customer service data and provide insights for service improvement... We are seeking a talented individual to join our dynamic team and contribute to our continued success. This role offers excellent growth opportunities and the chance to work with cutting-edge technologies.",
+      "requiredSkills": [
+        "Customer Insights",
+        "Reporting",
+        "Customer Insights",
+        "Process Optimization"
+      ],
+      "benefits": [
+        "Competitive salary and benefits package",
+        "Health, dental, and vision insurance",
+        "401(k) retirement plan with company matching",
+        "Flexible work arrangements",
+        "Paid time off and holidays",
+        "Professional development opportunities"
+      ],
+      "postedTime": "1 day ago",
+      "employer_id": "employer-13",
+      "status": "active",
+      "created_at": "2024-01-10T10:00:00Z"
+    },
+    {
+      "id": "18",
+      "title": "DevOps Engineer",
+      "company": "CloudTech Solutions",
+      "jobType": "Full-time",
+      "location": "Remote",
+      "salaryRange": "$25,000 - $70,000",
+      "description": "Build and maintain scalable infrastructure... We are seeking a talented individual to join our dynamic team and contribute to our continued success. This role offers excellent growth opportunities and the chance to work with cutting-edge technologies.",
+      "requiredSkills": ["Docker", "Kubernetes", "AWS", "CI/CD"],
+      "benefits": [
+        "Competitive salary and benefits package",
+        "Health, dental, and vision insurance",
+        "401(k) retirement plan with company matching",
+        "Flexible work arrangements",
+        "Paid time off and holidays",
+        "Professional development opportunities"
+      ],
+      "postedTime": "1 day ago",
+      "employer_id": "employer-13",
+      "status": "active",
+      "created_at": "2024-01-10T10:00:00Z"
+    },
+    {
+      "title": "Frontend Developer",
+      "company": "WebFlow Studios",
+      "jobType": "Full-time",
+      "location": "Remote",
+      "salaryRange": "$25,000 - $70,000",
+      "description": "Build responsive and interactive web applications... We are seeking a talented individual to join our dynamic team and contribute to our continued success. This role offers excellent growth opportunities and the chance to work with cutting-edge technologies.",
+      "requiredSkills": ["React", "Tailwind CSS", "JavaScript", "HTML"],
+      "benefits": [
+        "Competitive salary and benefits package",
+        "Health, dental, and vision insurance",
+        "401(k) retirement plan with company matching",
+        "Flexible work arrangements",
+        "Paid time off and holidays",
+        "Professional development opportunities"
+      ],
+      "postedTime": "1 day ago",
+      "employer_id": "employer-13",
+      "status": "active",
+      "created_at": "2024-01-10T10:00:00Z"
+    },
+    {
+      "id": "19",
+      "title": "Backend Developer",
+      "company": "ServerTech Inc.",
+      "jobType": "Full-time",
+      "location": "Remote",
+      "salaryRange": "$25,000 - $70,000",
+      "description": "Develop robust server-side applications and APIs... We are seeking a talented individual to join our dynamic team and contribute to our continued success. This role offers excellent growth opportunities and the chance to work with cutting-edge technologies.",
+      "requiredSkills": ["Node.js", "Express", "MongoDB", "PostgreSQL"],
+      "benefits": [
+        "Competitive salary and benefits package",
+        "Health, dental, and vision insurance",
+        "401(k) retirement plan with company matching",
+        "Flexible work arrangements",
+        "Paid time off and holidays",
+        "Professional development opportunities"
+      ],
+      "postedTime": "1 day ago",
+      "employer_id": "employer-13",
+      "status": "active",
+      "created_at": "2024-01-10T10:00:00Z"
+    },
+    {
+      "id": "20",
+      "title": "Graphic Designer",
+      "company": "Creative Agency",
+      "jobType": "Full-time",
+      "location": "Remote",
+      "salaryRange": "$25,000 - $70,000",
+      "description": "Design visual content for digital and print media... We are seeking a talented individual to join our dynamic team and contribute to our continued success. This role offers excellent growth opportunities and the chance to work with cutting-edge technologies.",
+      "requiredSkills": ["Photoshop", "Illustrator", "InDesign", "Branding"],
+      "benefits": [
+        "Competitive salary and benefits package",
+        "Health, dental, and vision insurance",
+        "401(k) retirement plan with company matching",
+        "Flexible work arrangements",
+        "Paid time off and holidays",
+        "Professional development opportunities"
+      ],
+      "postedTime": "1 day ago",
+      "employer_id": "employer-13",
+      "status": "active",
+      "created_at": "2024-01-10T10:00:00Z"
+    },
+    {
+      "id": "21",
+      "title": "Content Writer",
+      "company": "Content Hub",
+      "jobType": "Full-time",
+      "location": "Remote",
+      "salaryRange": "$25,000 - $70,000",
+      "description": "Create engaging content for websites and blogs... We are seeking a talented individual to join our dynamic team and contribute to our continued success. This role offers excellent growth opportunities and the chance to work with cutting-edge technologies.",
+      "requiredSkills": ["Writing", "Content Strategy", "SEO", "Research"],
+      "benefits": [
+        "Competitive salary and benefits package",
+        "Health, dental, and vision insurance",
+        "401(k) retirement plan with company matching",
+        "Flexible work arrangements",
+        "Paid time off and holidays",
+        "Professional development opportunities"
+      ],
+      "postedTime": "1 day ago",
+      "employer_id": "employer-13",
+      "status": "active",
+      "created_at": "2024-01-10T10:00:00Z"
+    },
+    {
+      "id": "22",
+      "title": "Social Media Manager",
+      "company": "Brand Boost",
+      "jobType": "Full-time",
+      "location": "Remote",
+      "salaryRange": "$25,000 - $70,000",
+      "description": "Manage social media presence and engagement... We are seeking a talented individual to join our dynamic team and contribute to our continued success. This role offers excellent growth opportunities and the chance to work with cutting-edge technologies.",
+      "requiredSkills": [
+        "Social Media",
+        "Content Creation",
+        "Analytics",
+        "Community Management"
+      ],
+      "benefits": [
+        "Competitive salary and benefits package",
+        "Health, dental, and vision insurance",
+        "401(k) retirement plan with company matching",
+        "Flexible work arrangements",
+        "Paid time off and holidays",
+        "Professional development opportunities"
+      ],
+      "postedTime": "1 day ago",
+      "employer_id": "employer-13",
+      "status": "active",
+      "created_at": "2024-01-10T10:00:00Z"
+    },
+    {
+      "id": "23",
+      "title": "Mobile App Developer",
+      "company": "AppWorks",
+      "jobType": "Full-time",
+      "location": "Remote",
+      "salaryRange": "$25,000 - $70,000",
+      "description": "Create cross-platform mobile applications... We are seeking a talented individual to join our dynamic team and contribute to our continued success. This role offers excellent growth opportunities and the chance to work with cutting-edge technologies.",
+      "requiredSkills": ["React Native", "Flutter", "Android", "iOS"],
+      "benefits": [
+        "Competitive salary and benefits package",
+        "Health, dental, and vision insurance",
+        "401(k) retirement plan with company matching",
+        "Flexible work arrangements",
+        "Paid time off and holidays",
+        "Professional development opportunities"
+      ],
+      "postedTime": "1 day ago",
+      "employer_id": "employer-13",
+      "status": "active",
+      "created_at": "2024-01-10T10:00:00Z"
+    },
+    {
+      "id": "24",
+      "title": "Marketing Director",
+      "company": "Growth Solutions",
+      "jobType": "Full-time",
+      "location": "Remote",
+      "salaryRange": "$25,000 - $70,000",
+      "description": "Lead our marketing team and drive growth initiatives... We are seeking a talented individual to join our dynamic team and contribute to our continued success. This role offers excellent growth opportunities and the chance to work with cutting-edge technologies.",
+      "requiredSkills": [
+        "Digital Marketing",
+        "Team Leadership",
+        "SEO",
+        "Analytics"
+      ],
+      "benefits": [
+        "Competitive salary and benefits package",
+        "Health, dental, and vision insurance",
+        "401(k) retirement plan with company matching",
+        "Flexible work arrangements",
+        "Paid time off and holidays",
+        "Professional development opportunities"
+      ],
+      "postedTime": "1 day ago",
+      "employer_id": "employer-13",
+      "status": "active",
+      "created_at": "2024-01-10T10:00:00Z"
+    },
+    {
+  "id": "25",
+  "title": "PR Manager",
+  "company": "BrandVoice Communications",
+  "jobType": "Full-time",
+  "location": "Hybrid (NYC/Remote)",
+  "salaryRange": "$75,000 - $110,000",
+  "description": "We're seeking an experienced PR Manager to lead our corporate communications and media relations. You'll develop strategic PR campaigns, manage crisis communications, and build relationships with key media outlets. This role requires a storyteller who can amplify our brand voice across traditional and digital media channels while protecting company reputation.",
+  "requiredSkills": [
+    "Media relations",
+    "Crisis communications",
+    "Press release writing",
+    "Brand messaging",
+    "Stakeholder management",
+    "PR analytics",
+    "Event planning"
+  ],
+  "benefits": [
+    "Competitive salary + performance bonuses",
+    "Comprehensive health coverage",
+    "Generous PTO + company holidays",
+    "Professional development stipend",
+    "Flexible hybrid schedule",
+    "Quarterly team retreats"
+  ]
+},
+{
+  "id": "26",
+  "title": "Digital Content Specialist",
+  "company": "NextGen Digital",
+  "jobType": "Full-time",
+  "location": "Remote",
+  "salaryRange": "$60,000 - $85,000",
+  "description": "We need a creative Digital Content Specialist to develop engaging content across our digital platforms. You'll create SEO-optimized blog posts, social media content, email campaigns, and multimedia assets that drive engagement and conversions. The ideal candidate has a knack for storytelling and data-driven content optimization.",
+  "requiredSkills": [
+    "Content creation",
+    "SEO/SEM strategies",
+    "Social media management",
+    "CMS platforms",
+    "Basic graphic design",
+    "Google Analytics",
+    "Email marketing"
+  ],
+  "benefits": [
+    "Remote-first workplace",
+    "Annual tech stipend",
+    "Unlimited creative PTO",
+    "Performance bonuses",
+    "Continuing education budget",
+    "Wellness program"
+  ]
+},
+{
+  "id": "27",
+  "title": "Associate Scientist",
+  "company": "BioInnovate Labs",
+  "jobType": "Full-time",
+  "location": "On-site (Boston, MA)",
+  "salaryRange": "$70,000 - $95,000",
+  "description": "Join our R&D team as an Associate Scientist to conduct laboratory research and support product development. You'll design experiments, analyze data, and contribute to scientific publications while working with cutting-edge biotechnologies. This role offers hands-on experience in a fast-paced research environment.",
+  "requiredSkills": [
+    "Laboratory techniques",
+    "Data analysis",
+    "PCR/ELISA",
+    "Scientific writing",
+    "Experimental design",
+    "Regulatory compliance",
+    "Collaborative research"
+  ],
+  "benefits": [
+    "Comprehensive health benefits",
+    "401(k) with 5% match",
+    "Tuition reimbursement",
+    "Conference travel funding",
+    "Onsite gym/facilities",
+    "Stock options"
+  ]
+}
+]

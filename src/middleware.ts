@@ -1,27 +1,70 @@
-import { authMiddleware } from '@clerk/nextjs'
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
+import { getToken } from 'next-auth/jwt'
 
-export default authMiddleware({
-  publicRoutes: [
-    '/',
-    '/api/clerk-webhook',
-    '/api/drive-activity/notification',
-    '/api/payment/success',
-  ],
-  ignoredRoutes: [
-    '/api/auth/callback/discord',
-    '/api/auth/callback/notion',
-    '/api/auth/callback/slack',
-    '/api/flow',
-    '/api/cron/wait',
-  ],
-})
+const publicRoutes = [
+  '/',
+  '/jobs',
+  '/api/jobs',
+  '/companies',
+  '/about',
+  '/contact',
+  '/auth',
+  '/sign-in',
+  '/sign-up',
+  '/api/auth/login',
+  '/api/auth/register',
+  '/api/auth/reset-password',
+  '/api/payment/success',
+  '/api/auth/[...nextauth]',
+]
 
-export const config = {
-  matcher: ['/((?!.+\\.[\\w]+$|_next).*)', '/', '/(api|trpc)(.*)'],
+const protectedRoutes = [
+  '/dashboard',
+  '/profile',
+  '/settings',
+  '/notifications',
+  '/hiring-workflow',
+  '/applications',
+  '/messages',
+  '/employer',
+  '/jobs/create',
+  '/api/users/notifications',
+]
+
+function isPublicRoute(pathname: string): boolean {
+  return publicRoutes.some(route => 
+    pathname === route || pathname.startsWith(route + '/')
+  )
 }
 
-// https://www.googleapis.com/auth/userinfo.email
-// https://www.googleapis.com/auth/userinfo.profile
-// https://www.googleapis.com/auth/drive.activity.readonly
-// https://www.googleapis.com/auth/drive.metadata
-// https://www.googleapis.com/auth/drive.readonly
+function isProtectedRoute(pathname: string): boolean {
+  return protectedRoutes.some(route => 
+    pathname === route || pathname.startsWith(route + '/')
+  )
+}
+
+export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl
+
+  if (isPublicRoute(pathname)) {
+    return NextResponse.next()
+  }
+
+  const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET })
+
+  if (!token && isProtectedRoute(pathname)) {
+    const loginUrl = new URL('/auth', request.url)
+    loginUrl.searchParams.set('redirect', pathname)
+    return NextResponse.redirect(loginUrl)
+  }
+
+  return NextResponse.next()
+}
+
+export const config = {
+  matcher: [
+    '/((?!.*\.(?:png|jpg|jpeg|svg|gif|webp|ico|css|js)$|_next).*)',
+    '/(api|trpc)(/.*)?$',
+  ],
+}

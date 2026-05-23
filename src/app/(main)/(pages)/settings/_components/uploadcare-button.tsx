@@ -2,6 +2,7 @@
 import React, { useEffect, useRef } from 'react'
 import * as LR from '@uploadcare/blocks'
 import { useRouter } from 'next/navigation'
+import { Camera } from 'lucide-react'
 
 type Props = {
   onUpload: (e: string) => any
@@ -22,8 +23,10 @@ const UploadCareButton = ({ onUpload }: Props) => {
         router.refresh()
       }
     }
-    ctxProviderRef.current.addEventListener('file-upload-success', handleUpload)
-  }, [])
+    if (ctxProviderRef.current) {
+      ctxProviderRef.current.addEventListener('file-upload-success', handleUpload)
+    }
+  }, [onUpload, router])
 
   return (
     <div>
@@ -41,6 +44,17 @@ const UploadCareButton = ({ onUpload }: Props) => {
         ctx-name="my-uploader"
         ref={ctxProviderRef}
       />
+
+      <label
+        htmlFor="uploadcare-trigger"
+        className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-emerald-600 text-white shadow-lg hover:bg-emerald-500 transition-colors"
+        onClick={() => {
+          const el = document.querySelector('lr-file-uploader-regular') as any
+          if (el) el.click()
+        }}
+      >
+        <Camera className="h-4 w-4" />
+      </label>
     </div>
   )
 }

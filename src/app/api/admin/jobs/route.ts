@@ -5,7 +5,12 @@ import { db } from "@/lib/db"
 
 // GET /api/admin/jobs - List all jobs for moderation
 export async function GET(request: NextRequest) {
-  // In production, add admin role check
+  // TODO: Verify admin role using session
+  // In production, check session.user.role === 'admin'
+  // const session = await getServerSession(authOptions)
+  // if (!session || session.user.role !== 'admin') {
+  //   return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+  // }
   const session = await getServerSession(authOptions)
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
@@ -53,7 +58,12 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  // In production, verify admin role
+  // TODO: Verify admin role using session
+  // In production, check session.user.role === 'admin'
+  // const session = await getServerSession(authOptions)
+  // if (!session || session.user.role !== 'admin') {
+  //   return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+  // }
   const { jobId, action, reason } = await request.json()
 
   if (!jobId || !action) {

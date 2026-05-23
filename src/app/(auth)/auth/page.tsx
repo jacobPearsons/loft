@@ -16,6 +16,7 @@ import { useState } from 'react'
 import { LoginForm, RegisterForm, ResetPasswordForm } from '@/features/auth/components'
 import { motion } from 'framer-motion'
 import { Briefcase, Users, Search, TrendingUp } from 'lucide-react'
+import LogoWithText from "@/components/global/logo";
 
 type AuthMode = 'login' | 'register' | 'reset'
 
@@ -73,7 +74,7 @@ export default function AuthPage() {
         <div className="relative z-10 flex flex-col justify-center items-center px-12 py-16 text-white">
           {/* Logo */}
           <div className="mb-12">
-            <div className="text-3xl font-bold text-white">LoftCommunity</div>
+            <LogoWithText />
           </div>
 
           {/* Headline */}
@@ -156,8 +157,7 @@ export default function AuthPage() {
             <div className="inline-flex items-center justify-center w-16 h-16 bg-emerald-600 rounded-2xl mb-4">
               <Briefcase className="w-8 h-8 text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-foreground">LoftCommunity</h1>
-            <p className="text-muted-foreground text-sm">Employment Platform</p>
+            <LogoWithText />
           </div>
 
           {/* Form Container with Glass Effect */}
@@ -167,7 +167,7 @@ export default function AuthPage() {
 
           {/* Footer */}
           <p className="text-center text-muted-foreground text-xs mt-8">
-            © 2024 LoftCommunity. All rights reserved.
+            © 2026 LoftCommunity. All rights reserved.
           </p>
         </motion.div>
       </div>

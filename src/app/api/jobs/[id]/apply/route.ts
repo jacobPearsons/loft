@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { db } from "@/lib/db"
+import { sendEmail, emailTemplates, shouldSendEmail } from "@/lib/email"
 
 export async function POST(
   request: NextRequest,
@@ -24,16 +25,19 @@ export async function POST(
     return NextResponse.json({ error: "User not found" }, { status: 404 })
   }
 
-  const jobId = parseInt(params.id)
+  const rawId = params.id
+  const jobIdNum = parseInt(rawId)
+  const isNumeric = !isNaN(jobIdNum)
 
-  // Check if job exists
-  const job = await db.job.findUnique({
-    where: { id: jobId },
+  const job = await db.job.findFirst({
+    where: isNumeric ? { id: jobIdNum } : { slug: rawId },
   })
 
   if (!job) {
     return NextResponse.json({ error: "Job not found" }, { status: 404 })
   }
+
+  const jobId = job.id
 
   // Check if already applied
   const existingApplication = await db.jobApplication.findFirst({
@@ -63,7 +67,7 @@ export async function POST(
     include: {
       job: {
         include: {
-          employer: { select: { companyName: true, companyLogo: true } },
+          employer: { select: { companyName: true, companyLogo: true, contactEmail: true } },
         },
       },
       user: { select: { firstName: true, lastName: true, email: true } },
@@ -86,6 +90,27 @@ export async function POST(
       data: { applicationId: application.id, jobId },
     },
   })
+
+  // Send email notifications
+  const applicantName = [application.user.firstName, application.user.lastName].filter(Boolean).join(" ") || "A candidate"
+  const companyName = application.job.employer?.companyName || "the company"
+
+  const emailPromises: Promise<any>[] = []
+
+  const shouldNotify = await shouldSendEmail(user.clerkId, 'applicationUpdates')
+  if (shouldNotify) {
+    emailPromises.push(
+      sendEmail(emailTemplates.applicationSubmitted(application.job.title, companyName, user.email))
+    )
+  }
+
+  if (application.job.employer?.contactEmail) {
+    emailPromises.push(
+      sendEmail(emailTemplates.newApplicant(application.job.title, applicantName, application.job.employer.contactEmail))
+    )
+  }
+
+  await Promise.allSettled(emailPromises)
 
   return NextResponse.json({
     success: true,

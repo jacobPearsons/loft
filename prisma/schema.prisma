@@ -1,5 +1,5 @@
-// WorkForce - Employment Platform Prisma Schema
-// Transformed from Fuzzie automation platform to WorkForce job portal
+// Loft Community - Employment Platform Prisma Schema
+// Transformed from Fuzzie automation platform to Loft Community job portal
 
 generator client {
   provider = "prisma-client-js"
@@ -16,7 +16,7 @@ datasource db {
 
 model Account {
   id                String  @id @default(cuid())
-  userId            String
+  userId            String  // References User.clerkId
   type              String
   provider          String
   providerAccountId String
@@ -28,7 +28,7 @@ model Account {
   id_token          String? @db.Text
   session_state     String?
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [clerkId], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
@@ -36,9 +36,9 @@ model Account {
 model Session {
   id           String   @id @default(cuid())
   sessionToken String   @unique
-  userId       String
+  userId       String  // References User.clerkId
   expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [clerkId], onDelete: Cascade)
 }
 
 model VerificationToken {
@@ -98,6 +98,10 @@ model User {
   employerProfile EmployerProfile?
   testResults     EnglishTestResult[]
   
+  // Messages
+  sentMessages        Message[] @relation("SentMessages")
+  receivedMessages    Message[] @relation("ReceivedMessages")
+  
   // NextAuth
   accounts        Account[]
   sessions        Session[]
@@ -126,6 +130,9 @@ model UserProfile {
   
   // Languages
   languages       LanguageSkill[]
+  
+  // Skills relation
+  skillsRelation  UserSkill[]
   
   // Availability
   availability    AvailabilityType?
@@ -313,6 +320,8 @@ model Job {
   // Relations
   applications    JobApplication[]
   savedBy         SavedJob[]
+  requiredSkillsRelation JobRequiredSkill[]
+  messages        Message[]
 }
 
 model JobCategory {
@@ -698,6 +707,8 @@ model Message {
   readAt      DateTime?
   createdAt   DateTime  @default(now())
   
+  sender      User      @relation("SentMessages", fields: [senderId], references: [clerkId])
+  receiver    User      @relation("ReceivedMessages", fields: [receiverId], references: [clerkId])
   job         Job?      @relation(fields: [jobId], references: [id])
 }
 

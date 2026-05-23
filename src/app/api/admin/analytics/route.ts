@@ -9,7 +9,12 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  // In production, verify admin role
+  // TODO: Verify admin role using session
+  // In production, check session.user.role === 'admin'
+  // const session = await getServerSession(authOptions)
+  // if (!session || session.user.role !== 'admin') {
+  //   return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+  // }
 
   const [
     totalUsers,

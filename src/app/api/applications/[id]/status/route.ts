@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { db } from "@/lib/db"
+import { sendEmail, emailTemplates, shouldSendEmail } from "@/lib/email"
 
 export async function PATCH(
   request: NextRequest,
@@ -17,7 +18,7 @@ export async function PATCH(
   }
 
   const applicationId = parseInt(params.id)
-  const { status } = await request.json()
+  const { status, notes } = await request.json()
 
   const validStatuses = ["PENDING", "REVIEWING", "SHORTLISTED", "INTERVIEW", "OFFERED", "HIRED", "REJECTED"]
   
@@ -30,7 +31,11 @@ export async function PATCH(
     where: { id: applicationId },
     include: {
       user: true,
-      job: true,
+      job: {
+        include: {
+          employer: { select: { companyName: true, contactEmail: true } },
+        },
+      },
     },
   })
 
@@ -51,6 +56,7 @@ export async function PATCH(
     where: { id: applicationId },
     data: { 
       status,
+      ...(notes ? { employerNotes: notes } : {}),
       reviewedAt: status === "REVIEWING" || status === "SHORTLISTED" ? new Date() : application.reviewedAt,
       interviewAt: status === "INTERVIEW" ? new Date() : application.interviewAt,
       acceptedAt: status === "HIRED" ? new Date() : application.acceptedAt,
@@ -70,6 +76,13 @@ export async function PATCH(
       link: `/dashboard/applications/${application.id}`,
     },
   })
+
+  // Send email notification
+  const companyName = application.job.employer?.companyName || "the company"
+  const shouldNotify = await shouldSendEmail(application.userId, 'applicationUpdates')
+  if (shouldNotify) {
+    await sendEmail(emailTemplates.statusUpdate(application.job.title, companyName, status.toLowerCase(), application.user.email))
+  }
 
   return NextResponse.json({
     success: true,

@@ -1,5 +1,11 @@
-import { SignUp } from '@clerk/nextjs'
+/**
+ * Sign Up Page
+ * 
+ * Redirects to native auth page with register
+ */
+
+import { redirect } from 'next/navigation'
 
 export default function Page() {
-  return <SignUp />
+  redirect('/auth')
 }

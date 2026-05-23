@@ -32,17 +32,17 @@ export default function EmployerDashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-emerald-400" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-neutral-950 p-8">
+    <div className="min-h-screen bg-background p-8">
       <div className="container max-w-6xl">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-white">Employer Dashboard</h1>
+          <h1 className="text-3xl font-bold text-foreground">Employer Dashboard</h1>
           <Link href="/jobs/create">
             <Button className="bg-emerald-600 hover:bg-emerald-700">
               <Plus className="w-4 h-4 mr-2" /> Post Job
@@ -51,10 +51,10 @@ export default function EmployerDashboardPage() {
         </div>
 
         {!company && (
-          <Card className="bg-neutral-900 border-neutral-800 mb-8">
+          <Card className="bg-card border mb-8">
             <CardContent className="p-6 text-center">
-              <Building className="w-12 h-12 text-neutral-400 mx-auto mb-4" />
-              <p className="text-neutral-400 mb-4">Complete your company profile to post jobs</p>
+              <Building className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground mb-4">Complete your company profile to post jobs</p>
               <Link href="/employer/company">
                 <Button>Create Company Profile</Button>
               </Link>
@@ -62,38 +62,38 @@ export default function EmployerDashboardPage() {
           </Card>
         )}
 
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
-          <Card className="bg-neutral-900 border-neutral-800">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <Card className="bg-card border">
             <CardContent className="p-6">
               <div className="flex items-center gap-4">
                 <Briefcase className="w-8 h-8 text-emerald-400" />
                 <div>
-                  <p className="text-2xl font-bold text-white">{jobs.length}</p>
-                  <p className="text-neutral-400">Active Jobs</p>
+                  <p className="text-2xl font-bold text-foreground">{jobs.length}</p>
+                  <p className="text-muted-foreground">Active Jobs</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-neutral-900 border-neutral-800">
+          <Card className="bg-card border">
             <CardContent className="p-6">
               <div className="flex items-center gap-4">
                 <Users className="w-8 h-8 text-emerald-400" />
                 <div>
-                  <p className="text-2xl font-bold text-white">{totalApplicants}</p>
-                  <p className="text-neutral-400">Total Applicants</p>
+                  <p className="text-2xl font-bold text-foreground">{totalApplicants}</p>
+                  <p className="text-muted-foreground">Total Applicants</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-neutral-900 border-neutral-800">
+          <Card className="bg-card border">
             <CardContent className="p-6">
               <div className="flex items-center gap-4">
                 <Users className="w-8 h-8 text-emerald-400" />
                 <div>
-                  <p className="text-2xl font-bold text-white">0</p>
-                  <p className="text-neutral-400">Hired This Month</p>
+                  <p className="text-2xl font-bold text-foreground">0</p>
+                  <p className="text-muted-foreground">Hired This Month</p>
                 </div>
               </div>
             </CardContent>
@@ -101,27 +101,27 @@ export default function EmployerDashboardPage() {
         </div>
 
         <Tabs defaultValue="jobs">
-          <TabsList className="bg-neutral-900">
+          <TabsList className="bg-card">
             <TabsTrigger value="jobs">My Jobs</TabsTrigger>
             <TabsTrigger value="candidates">All Candidates</TabsTrigger>
           </TabsList>
 
           <TabsContent value="jobs" className="mt-4">
             {jobs.length === 0 ? (
-              <Card className="bg-neutral-900 border-neutral-800">
-                <CardContent className="p-6 text-center text-neutral-400">
+              <Card className="bg-card border">
+                <CardContent className="p-6 text-center text-muted-foreground">
                   No jobs posted yet. Post your first job to start receiving applications.
                 </CardContent>
               </Card>
             ) : (
               <div className="space-y-4">
                 {jobs.map((job: any) => (
-                  <Card key={job.id} className="bg-neutral-900 border-neutral-800">
+                  <Card key={job.id} className="bg-card border">
                     <CardContent className="p-4">
                       <div className="flex justify-between items-start">
                         <div>
-                          <h3 className="text-white font-semibold">{job.title}</h3>
-                          <p className="text-neutral-400">{job.applicationsCount || 0} applicants</p>
+                          <h3 className="text-foreground font-semibold">{job.title}</h3>
+                          <p className="text-muted-foreground">{job.applicationsCount || 0} applicants</p>
                         </div>
                         <Badge variant={job.status === "PUBLISHED" ? "default" : "secondary"}>
                           {job.status}
@@ -143,8 +143,8 @@ export default function EmployerDashboardPage() {
           </TabsContent>
 
           <TabsContent value="candidates" className="mt-4">
-            <Card className="bg-neutral-900 border-neutral-800">
-              <CardContent className="p-6 text-center text-neutral-400">
+            <Card className="bg-card border">
+              <CardContent className="p-6 text-center text-muted-foreground">
                 Select a job to view candidates
               </CardContent>
             </Card>

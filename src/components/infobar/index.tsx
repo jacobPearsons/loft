@@ -1,56 +1,27 @@
 'use client'
-import React, { useEffect } from 'react'
-import { ModeToggle } from '../global/mode-toggle'
-import { Book, Headphones, Search } from 'lucide-react'
-import Templates from '../icons/cloud_download'
-import { Input } from '@/components/ui/input'
 
+import React from 'react'
+import { Book, Headphones, LogOut } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { NotificationCenter } from '@/components/NotificationCenter'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { UserButton } from '@clerk/nextjs'
-import { useBilling } from '@/providers/billing-provider'
-import { onPaymentDetails } from '@/app/(main)/(pages)/billing/_actions/payment-connecetions'
+import { useSession } from 'next-auth/react'
+import { useAuthContext } from '@/providers/auth-provider'
 
 type Props = {}
 
 const InfoBar = (props: Props) => {
-  const { credits, tier, setCredits, setTier } = useBilling()
-
-  const onGetPayment = async () => {
-    const response = await onPaymentDetails()
-    if (response) {
-      setTier(response.tier!)
-      setCredits(response.credits!)
-    }
-  }
-
-  useEffect(() => {
-    onGetPayment()
-  }, [])
+  const { data: session } = useSession()
+  const { logout } = useAuthContext()
+  const user = session?.user
 
   return (
-    <div className="flex flex-row justify-end gap-6 items-center px-4 py-4 w-full dark:bg-black ">
-      <span className="flex items-center gap-2 font-bold">
-        <p className="text-sm font-light text-gray-300">Credits</p>
-        {tier == 'Unlimited' ? (
-          <span>Unlimited</span>
-        ) : (
-          <span>
-            {credits}/{tier == 'Free' ? '10' : tier == 'Pro' && '100'}
-          </span>
-        )}
-      </span>
-      <span className="flex items-center rounded-full bg-muted px-4">
-        <Search />
-        <Input
-          placeholder="Quick Search"
-          className="border-none bg-transparent"
-        />
-      </span>
+    <div className="flex flex-row justify-end gap-6 items-center px-4 py-4 w-full bg-background ">
       <TooltipProvider>
         <Tooltip delayDuration={0}>
           <TooltipTrigger>
@@ -71,7 +42,21 @@ const InfoBar = (props: Props) => {
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
-      <UserButton />
+      <NotificationCenter />
+      {user && (
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground hidden md:inline">
+            {user.name || user.email}
+          </span>
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={() => logout()}
+          >
+            <LogOut className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
     </div>
   )
 }

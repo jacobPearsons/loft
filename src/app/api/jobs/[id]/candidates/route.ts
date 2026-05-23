@@ -22,7 +22,7 @@ export async function GET(
   const job = await db.job.findUnique({
     where: { id: jobId },
     include: {
-      requiredSkills: {
+      requiredSkillsRelation: {
         include: { skill: true },
       },
     },
@@ -48,7 +48,7 @@ export async function GET(
         include: {
           profile: {
             include: {
-              skills: {
+              skillsRelation: {
                 include: { skill: true },
               },
             },
@@ -58,12 +58,12 @@ export async function GET(
     },
   })
 
-  const jobSkillIds = job.requiredSkills.map((rs) => rs.skillId)
+  const jobSkillIds = (job.requiredSkillsRelation || []).map((rs: any) => rs.skillId)
 
   // Calculate match scores
-  const candidates = applications.map((app) => {
-    const userSkillIds = app.user.profile?.skills.map((s) => s.skillId) || []
-    const matchedSkills = userSkillIds.filter((id) => jobSkillIds.includes(id)).length
+  const candidates = applications.map((app: any) => {
+    const userSkillIds = (app.user.profile?.skillsRelation || []).map((s: any) => s.skillId)
+    const matchedSkills = userSkillIds.filter((id: number) => jobSkillIds.includes(id)).length
     const matchScore = jobSkillIds.length > 0 
       ? Math.round((matchedSkills / jobSkillIds.length) * 100) 
       : 0
@@ -99,7 +99,7 @@ export async function GET(
     job: {
       id: job.id,
       title: job.title,
-      requiredSkills: job.requiredSkills.map(rs => rs.skill.name),
+      requiredSkills: job.requiredSkillsRelation.map(rs => rs.skill.name),
     },
     candidates,
     total: candidates.length,

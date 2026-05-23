@@ -1,6 +1,21 @@
 import { Resend } from "resend"
+import { db } from "@/lib/db"
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
+
+export async function shouldSendEmail(clerkId: string, type: 'applicationUpdates' | 'newMessages'): Promise<boolean> {
+  try {
+    const prefs = await db.notificationPreference.findUnique({
+      where: { userId: clerkId }
+    })
+    if (!prefs) return true
+    if (type === 'applicationUpdates') return prefs.applicationUpdates
+    if (type === 'newMessages') return prefs.newMessages
+    return true
+  } catch {
+    return true
+  }
+}
 
 interface EmailOptions {
   to: string
@@ -105,6 +120,8 @@ export const emailTemplates = {
     `,
   }),
 
+  // NOTE: jobExpiring is ready for use but not currently wired — no cron/scheduled job exists yet.
+  // Wire it to a scheduled job (e.g. cron) that queries jobs nearing their deadline and sends this email.
   jobExpiring: (jobTitle: string, daysLeft: number, to: string) => ({
     to,
     subject: `Job Expiring - ${jobTitle}`,

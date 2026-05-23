@@ -2,44 +2,49 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import React from 'react'
+import { useSession } from 'next-auth/react'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { menuOptions } from '@/lib/constant'
+import { menuOptions, employerMenuOptions } from '@/lib/constant'
 import clsx from 'clsx'
-import { Separator } from '@/components/ui/separator'
-import { Database, GitBranch, LucideMousePointerClick } from 'lucide-react'
-import { ModeToggle } from '../global/mode-toggle'
+import { X } from 'lucide-react'
+import { LogoWithText } from '../global/logo'
 
-type Props = {}
+type Props = {
+  isOpen?: boolean
+  onClose?: () => void
+  mobile?: boolean
+}
 
-const MenuOptions = (props: Props) => {
+const MenuOptions = ({ isOpen, onClose, mobile }: Props) => {
   const pathName = usePathname()
+  const { data: session } = useSession()
+  const isEmployer = (session?.user as any)?.isEmployer ?? false
+  const options = isEmployer ? employerMenuOptions : menuOptions
 
-  return (
-    <nav className=" dark:bg-black h-screen overflow-scroll  justify-between flex items-center flex-col  gap-10 py-6 px-2">
+  const content = (
+    <nav className="bg-background h-screen overflow-scroll justify-between flex items-center flex-col gap-10 py-6 px-2">
       <div className="flex items-center justify-center flex-col gap-8">
-        <Link
-          className="flex font-bold flex-row "
-          href="/"
-        >
-          fuzzie.
+        <Link className="flex font-bold flex-row" href="/" onClick={onClose}>
+          <LogoWithText / >
         </Link>
         <TooltipProvider>
-          {menuOptions.map((menuItem) => (
+          {options.map((menuItem) => (
             <ul key={menuItem.name}>
               <Tooltip delayDuration={0}>
                 <TooltipTrigger>
                   <li>
                     <Link
                       href={menuItem.href}
+                      onClick={onClose}
                       className={clsx(
-                        'group h-8 w-8 flex items-center justify-center  scale-[1.5] rounded-lg p-[3px]  cursor-pointer',
+                        'group h-11 w-11 flex items-center justify-center scale-[1.5] rounded-lg p-[4px] cursor-pointer',
                         {
-                          'dark:bg-[#2F006B] bg-[#EEE0FF] ':
+                          'dark:bg-emerald-800/50 bg-emerald-500/20':
                             pathName === menuItem.href,
                         }
                       )}
@@ -60,42 +65,32 @@ const MenuOptions = (props: Props) => {
             </ul>
           ))}
         </TooltipProvider>
-        <Separator />
-        <div className="flex items-center flex-col gap-9 dark:bg-[#353346]/30 py-4 px-2 rounded-full h-56 overflow-scroll border-[1px]">
-          <div className="relative dark:bg-[#353346]/70 p-2 rounded-full dark:border-t-[2px] border-[1px] dark:border-t-[#353346]">
-            <LucideMousePointerClick
-              className="dark:text-white"
-              size={18}
-            />
-            <div className="border-l-2 border-muted-foreground/50 h-6 absolute left-1/2 transform translate-x-[-50%] -bottom-[30px]" />
-          </div>
-          <div className="relative dark:bg-[#353346]/70 p-2 rounded-full dark:border-t-[2px] border-[1px] dark:border-t-[#353346]">
-            <GitBranch
-              className="text-muted-foreground"
-              size={18}
-            />
-            <div className="border-l-2 border-muted-foreground/50 h-6 absolute left-1/2 transform translate-x-[-50%] -bottom-[30px]"></div>
-          </div>
-          <div className="relative dark:bg-[#353346]/70 p-2 rounded-full dark:border-t-[2px] border-[1px] dark:border-t-[#353346]">
-            <Database
-              className="text-muted-foreground"
-              size={18}
-            />
-            <div className="border-l-2 border-muted-foreground/50 h-6 absolute left-1/2 transform translate-x-[-50%] -bottom-[30px]"></div>
-          </div>
-          <div className="relative dark:bg-[#353346]/70 p-2 rounded-full dark:border-t-[2px] border-[1px] dark:border-t-[#353346]">
-            <GitBranch
-              className="text-muted-foreground"
-              size={18}
-            />
-          </div>
-        </div>
-      </div>
-      <div className="flex items-center justify-center flex-col gap-8">
-        <ModeToggle />
       </div>
     </nav>
   )
+
+  if (mobile) {
+    return (
+      <>
+        {isOpen && (
+          <div className="fixed inset-0 z-50 md:hidden">
+            <div className="fixed inset-0 bg-black/60" onClick={onClose} />
+            <div className="fixed left-0 top-0 bottom-0 w-20 bg-background animate-in slide-in-from-left">
+              <button
+                onClick={onClose}
+                className="absolute -right-8 top-4 p-2 text-foreground"
+              >
+                <X className="w-5 h-5" />
+              </button>
+              {content}
+            </div>
+          </div>
+        )}
+      </>
+    )
+  }
+
+  return <div className="hidden md:flex">{content}</div>
 }
 
 export default MenuOptions

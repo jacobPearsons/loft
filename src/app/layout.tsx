@@ -1,12 +1,9 @@
 import type { Metadata } from 'next'
-import { DM_Sans } from 'next/font/google'
 import './globals.css'
-import { ThemeProvider } from '@/providers/theme-provider'
 import ModalProvider from '@/providers/modal-provider'
 import { Toaster } from '@/components/ui/sonner'
 import NextAuthProvider from '@/providers/next-auth-provider'
-
-const font = DM_Sans({ subsets: ['latin'] })
+import { AuthProvider } from '@/providers/auth-provider'
 
 export const metadata: Metadata = {
   title: 'LoftCommunity - Employment & Hiring Platform',
@@ -19,20 +16,15 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <body className={font.className}>
+    <html lang="en" className="dark">
+      <body className="font-sans">
         <NextAuthProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="dark"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <ModalProvider>
+          <ModalProvider>
+            <AuthProvider>
               {children}
               <Toaster />
-            </ModalProvider>
-          </ThemeProvider>
+            </AuthProvider>
+          </ModalProvider>
         </NextAuthProvider>
       </body>
     </html>
