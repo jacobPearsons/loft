@@ -2,6 +2,7 @@
 
 import { Card, CardContent } from '@/components/ui/card'
 import { Code, Database, Palette, Smartphone, Cloud, BarChart, Briefcase, Heart, Shield } from 'lucide-react'
+import Image from 'next/image'
 import Link from 'next/link'
 
 const categories = [
@@ -18,8 +19,17 @@ const categories = [
 
 export function JobCategories() {
   return (
-    <section className="w-full py-20 bg-neutral-950">
-      <div className="container px-4 md:px-6">
+    <section className="w-full py-20 bg-neutral-950 relative overflow-hidden">
+      <div className="absolute inset-0 opacity-5">
+        <Image
+          src="/images/Job%20Category%20Illustrations.png"
+          alt=""
+          fill
+          className="object-cover"
+          aria-hidden
+        />
+      </div>
+      <div className="container px-4 md:px-6 relative z-10">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
             Browse Jobs by Category

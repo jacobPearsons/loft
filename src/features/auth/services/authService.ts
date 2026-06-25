@@ -1,32 +1,21 @@
-/**
- * Authentication Service
- * 
- * Handles all authentication-related business logic.
- * Follows the docs/backend-architecture-framework.md pattern.
- * 
- * Responsibilities:
- * - User registration
- * - User login
- * - Password reset
- * - Session management
- * - Password validation and hashing
- */
-
-import type { 
-  LoginInput, 
-  RegisterInput, 
-  ResetPasswordInput, 
-  UpdatePasswordInput,
-  AuthResponse,
-  LogoutResponse,
+import bcrypt from 'bcryptjs'
+import crypto from 'crypto'
+import { db } from '@/lib/db'
+import { sendEmail } from '@/lib/email'
+import { createLogger } from '@/lib/logger'
+import type {
+  PasswordRequirements,
   AuthUser,
-  PasswordRequirements
-} from '../types'
+  AuthResponse,
+  RegisterInput,
+  LoginInput,
+  LogoutResponse,
+  ResetPasswordInput,
+  UpdatePasswordInput,
+} from '@/features/auth/types'
 
-// Simulated in-memory user store (in production, use database via Prisma)
-const users: Map<string, AuthUser & { passwordHash: string }> = new Map()
+const log = createLogger('authService')
 
-// Password validation
 export function validatePassword(password: string): PasswordRequirements {
   return {
     minLength: password.length >= 8,
@@ -41,204 +30,206 @@ export function isPasswordStrongEnough(requirements: PasswordRequirements): bool
   return Object.values(requirements).every(Boolean)
 }
 
-// Email validation
 export function isValidEmail(email: string): boolean {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   return emailRegex.test(email)
 }
 
-// Simple hash function (in production, use bcrypt)
-function simpleHash(password: string): string {
-  let hash = 0
-  for (let i = 0; i < password.length; i++) {
-    const char = password.charCodeAt(i)
-    hash = ((hash << 5) - hash) + char
-    hash = hash & hash
+function toAuthUser(dbUser: {
+  id: number
+  clerkId: string
+  email: string
+  name: string | null
+  firstName: string | null
+  lastName: string | null
+  profileImage: string | null
+  isEmployer: boolean
+  isVerified: boolean
+  tier: string
+  credits: string
+  createdAt: Date
+}): AuthUser {
+  return {
+    id: dbUser.clerkId,
+    clerkId: dbUser.clerkId,
+    email: dbUser.email,
+    firstName: dbUser.firstName || undefined,
+    lastName: dbUser.lastName || undefined,
+    name: dbUser.name || undefined,
+    profileImage: dbUser.profileImage || undefined,
+    role: dbUser.isEmployer ? 'employer' : 'job_seeker',
+    isVerified: dbUser.isVerified,
+    tier: dbUser.tier,
+    credits: dbUser.credits,
+    createdAt: dbUser.createdAt,
   }
-  return `hashed_${Math.abs(hash).toString(16)}_${password.length}`
 }
 
-// Generate user ID
-function generateUserId(): string {
-  return `user_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
-}
-
-// Register a new user
 export async function registerUser(input: RegisterInput): Promise<AuthResponse> {
-  // Validate email format
   if (!isValidEmail(input.email)) {
-    return {
-      success: false,
-      message: 'Please enter a valid email address',
-    }
+    return { success: false, message: 'Please enter a valid email address' }
   }
 
-  // Check if user already exists
-  const existingUser = users.get(input.email.toLowerCase())
-  if (existingUser) {
-    return {
-      success: false,
-      message: 'An account with this email already exists',
-    }
-  }
-
-  // Validate password strength
   const passwordRequirements = validatePassword(input.password)
   if (!isPasswordStrongEnough(passwordRequirements)) {
-    return {
-      success: false,
-      message: 'Password does not meet all requirements',
-    }
+    return { success: false, message: 'Password does not meet all requirements' }
   }
 
-  // Check password match
   if (input.password !== input.confirmPassword) {
-    return {
-      success: false,
-      message: 'Passwords do not match',
-    }
+    return { success: false, message: 'Passwords do not match' }
   }
 
-  // Create new user
-  const userId = generateUserId()
-  const now = new Date()
-  
-  const newUser: AuthUser & { passwordHash: string } = {
-    id: userId,
-    clerkId: undefined,
-    email: input.email.toLowerCase(),
-    firstName: input.firstName,
-    lastName: input.lastName,
-    name: `${input.firstName} ${input.lastName}`,
-    profileImage: undefined,
-    role: input.role,
-    isVerified: false,
-    tier: 'Free',
-    credits: '10',
-    createdAt: now,
-    passwordHash: simpleHash(input.password),
+  const existing = await db.user.findUnique({ where: { email: input.email.toLowerCase() } })
+  if (existing) {
+    return { success: false, message: 'An account with this email already exists' }
   }
 
-  // Store user
-  users.set(input.email.toLowerCase(), newUser)
+  const hashedPassword = await bcrypt.hash(input.password, 12)
+  const clerkId = `local_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
 
-  // Return user without password
-  const { passwordHash, ...userWithoutPassword } = newUser
+  const user = await db.user.create({
+    data: {
+      clerkId,
+      email: input.email.toLowerCase(),
+      firstName: input.firstName,
+      lastName: input.lastName,
+      name: `${input.firstName} ${input.lastName}`,
+      hashedPassword,
+      isEmployer: input.role === 'employer',
+      isApplicant: input.role === 'job_seeker',
+    },
+  })
 
+  if (input.role === 'job_seeker') {
+    await db.userProfile.create({ data: { userId: clerkId } })
+  }
+
+  const authUser = toAuthUser(user)
   return {
     success: true,
     message: 'Registration successful. Please verify your email.',
-    user: userWithoutPassword,
+    user: authUser,
   }
 }
 
-// Login user
 export async function loginUser(input: LoginInput): Promise<AuthResponse> {
-  // Validate email format
   if (!isValidEmail(input.email)) {
-    return {
-      success: false,
-      message: 'Please enter a valid email address',
-    }
+    return { success: false, message: 'Please enter a valid email address' }
   }
 
-  // Find user
-  const user = users.get(input.email.toLowerCase())
-  if (!user) {
-    return {
-      success: false,
-      message: 'Invalid email or password',
-    }
+  const user = await db.user.findUnique({ where: { email: input.email.toLowerCase() } })
+  if (!user || !user.hashedPassword) {
+    return { success: false, message: 'Invalid email or password' }
   }
 
-  // Verify password
-  const passwordHash = simpleHash(input.password)
-  if (user.passwordHash !== passwordHash) {
-    return {
-      success: false,
-      message: 'Invalid email or password',
-    }
+  const valid = await bcrypt.compare(input.password, user.hashedPassword)
+  if (!valid) {
+    return { success: false, message: 'Invalid email or password' }
   }
 
-  // Return user without password
-  const { passwordHash: _, ...userWithoutPassword } = user
-
+  const authUser = toAuthUser(user)
   return {
     success: true,
     message: 'Login successful',
-    user: userWithoutPassword,
-    token: `token_${user.id}_${Date.now()}`,
+    user: authUser,
+    token: `session_${user.clerkId}_${Date.now()}`,
   }
 }
 
-// Logout user
 export async function logoutUser(): Promise<LogoutResponse> {
-  // In a real app, invalidate the session/token
-  return {
-    success: true,
-    message: 'Logged out successfully',
-  }
+  return { success: true, message: 'Logged out successfully' }
 }
 
-// Request password reset
 export async function requestPasswordReset(input: ResetPasswordInput): Promise<AuthResponse> {
-  // Validate email format
   if (!isValidEmail(input.email)) {
-    return {
-      success: false,
-      message: 'Please enter a valid email address',
-    }
+    return { success: false, message: 'Please enter a valid email address' }
   }
 
-  // Check if user exists
-  const user = users.get(input.email.toLowerCase())
+  const user = await db.user.findUnique({ where: { email: input.email.toLowerCase() } })
   if (!user) {
-    // Don't reveal whether user exists
     return {
       success: true,
       message: 'If an account exists, a password reset link has been sent',
     }
   }
 
-  // In production, generate reset token and send email
-  // For now, simulate success
+  const token = crypto.randomBytes(32).toString('hex')
+  await db.verificationToken.deleteMany({
+    where: { identifier: input.email.toLowerCase() },
+  })
+  await db.verificationToken.create({
+    data: {
+      identifier: input.email.toLowerCase(),
+      token,
+      expires: new Date(Date.now() + 60 * 60 * 1000),
+    },
+  })
+
+  log.info('Password reset token generated', { email: input.email })
+
+  const resetUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/auth?resetToken=${token}`
+  await sendEmail({
+    to: input.email,
+    subject: 'Reset your LoftCommunity password',
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <body style="font-family: sans-serif; padding: 20px; max-width: 600px; margin: 0 auto;">
+          <h1 style="color: #10b981;">Reset Your Password</h1>
+          <p>We received a request to reset your password for LoftCommunity.</p>
+          <p>Click the link below to set a new password. This link expires in 1 hour.</p>
+          <a href="${resetUrl}"
+             style="display: inline-block; background: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin-top: 16px;">
+            Reset Password
+          </a>
+          <p style="margin-top: 24px; color: #6b7280; font-size: 14px;">
+            If you didn't request this, you can safely ignore this email.
+          </p>
+        </body>
+      </html>
+    `,
+  })
+
   return {
     success: true,
     message: 'If an account exists, a password reset link has been sent',
   }
 }
 
-// Update password with reset token
 export async function updatePassword(input: UpdatePasswordInput): Promise<AuthResponse> {
-  // Validate password strength
   const passwordRequirements = validatePassword(input.newPassword)
   if (!isPasswordStrongEnough(passwordRequirements)) {
-    return {
-      success: false,
-      message: 'Password does not meet all requirements',
-    }
+    return { success: false, message: 'Password does not meet all requirements' }
   }
 
-  // Check password match
   if (input.newPassword !== input.confirmPassword) {
-    return {
-      success: false,
-      message: 'Passwords do not match',
-    }
+    return { success: false, message: 'Passwords do not match' }
   }
 
-  // In production, validate token and find user
-  // For now, simulate that token is invalid (since we're not generating real tokens)
-  return {
-    success: false,
-    message: 'Invalid or expired reset token',
+  const tokenRecord = await db.verificationToken.findUnique({
+    where: { token: input.token },
+  })
+  if (!tokenRecord || tokenRecord.expires < new Date()) {
+    if (tokenRecord) {
+      await db.verificationToken.delete({ where: { token: input.token } })
+    }
+    return { success: false, message: 'Invalid or expired reset token' }
   }
+
+  const hashedPassword = await bcrypt.hash(input.newPassword, 12)
+  await db.user.update({
+    where: { email: tokenRecord.identifier },
+    data: { hashedPassword },
+  })
+  await db.verificationToken.delete({ where: { token: input.token } })
+
+  return { success: true, message: 'Password updated successfully' }
 }
 
-// Get current user (simulated)
 export async function getCurrentUser(token?: string): Promise<AuthUser | null> {
   if (!token) return null
-  
-  // In production, validate token and fetch user from session/database
-  return null
+  const match = token.match(/^session_(.+)_\d+$/)
+  if (!match) return null
+  const user = await db.user.findUnique({ where: { clerkId: match[1] } })
+  return user ? toAuthUser(user) : null
 }

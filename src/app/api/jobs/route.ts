@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth"
 import { db } from "@/lib/db"
 
 import jobsData from '@/data/jobs.json'
+import { getAllRemoteJobs } from '@/lib/remote-jobs'
 
 function parseSalaryRange(range?: string): { min: number | null; max: number | null } {
   if (!range) return { min: null, max: null }
@@ -74,6 +75,7 @@ interface JobResponse {
   publishedAt: string
   company: { companyName: string; companyLogo: string | null; city: string | null } | null
   skills: string[]
+  source?: string
 }
 
 let jsonFallbackCache: { jobs: JobResponse[] } | null = null
@@ -227,52 +229,75 @@ export async function GET(request: NextRequest) {
       db.job.count({ where }),
     ])
 
+    const remoteJobs = (await getAllRemoteJobs()).filter((j) => {
+      if (search) {
+        const q = search.toLowerCase()
+        if (!j.title.toLowerCase().includes(q) && !j.description.toLowerCase().includes(q)) return false
+      }
+      if (location && !j.location?.toLowerCase().includes(location.toLowerCase())) return false
+      return true
+    })
+
     if (total === 0) {
       const fallback = filterFallbackJobs(getFallbackJobs(), search, location, experience, jobType, workMode, sort)
-      const totalFallback = fallback.length
-      const paged = fallback.slice((page - 1) * limit, page * limit)
+      const allJobs = [...fallback, ...remoteJobs]
+      const totalAll = allJobs.length
+      const paged = allJobs.slice((page - 1) * limit, page * limit)
       return NextResponse.json({
         jobs: paged,
-        total: totalFallback,
+        total: totalAll,
         page,
-        totalPages: Math.ceil(totalFallback / limit),
+        totalPages: Math.ceil(totalAll / limit),
       })
     }
 
     return NextResponse.json({
-      jobs: jobs.map((job) => ({
-        id: job.id,
-        title: job.title,
-        slug: job.slug,
-        description: job.description,
-        jobType: job.jobType,
-        experienceLevel: job.experienceLevel,
-        workMode: job.workMode,
-        location: job.location,
-        city: job.city,
-        remoteWork: job.remoteWork,
-        salaryMin: job.salaryMin,
-        salaryMax: job.salaryMax,
-        salaryCurrency: job.salaryCurrency,
-        viewsCount: job.viewsCount,
-        applicationsCount: job.applicationsCount,
-        publishedAt: job.publishedAt,
-        company: job.employer,
-        skills: job.requiredSkillsRelation.map((rs) => rs.skill.name),
-      })),
-      total,
+      jobs: [
+        ...jobs.map((job) => ({
+          id: job.id,
+          title: job.title,
+          slug: job.slug,
+          description: job.description,
+          jobType: job.jobType,
+          experienceLevel: job.experienceLevel,
+          workMode: job.workMode,
+          location: job.location,
+          city: job.city,
+          remoteWork: job.remoteWork,
+          salaryMin: job.salaryMin,
+          salaryMax: job.salaryMax,
+          salaryCurrency: job.salaryCurrency,
+          viewsCount: job.viewsCount,
+          applicationsCount: job.applicationsCount,
+          publishedAt: job.publishedAt,
+          company: job.employer,
+          skills: job.requiredSkillsRelation.map((rs) => rs.skill.name),
+          source: "local",
+        })),
+        ...remoteJobs,
+      ],
+      total: total + remoteJobs.length,
       page,
-      totalPages: Math.ceil(total / limit),
+      totalPages: Math.ceil((total + remoteJobs.length) / limit),
     })
   } catch {
     const fallback = filterFallbackJobs(getFallbackJobs(), search, location, experience, jobType, workMode, sort)
-    const totalFallback = fallback.length
-    const paged = fallback.slice((page - 1) * limit, page * limit)
+    const remoteJobs = (await getAllRemoteJobs()).filter((j) => {
+      if (search) {
+        const q = search.toLowerCase()
+        if (!j.title.toLowerCase().includes(q) && !j.description.toLowerCase().includes(q)) return false
+      }
+      if (location && !j.location?.toLowerCase().includes(location.toLowerCase())) return false
+      return true
+    })
+    const allJobs = [...fallback, ...remoteJobs]
+    const totalAll = allJobs.length
+    const paged = allJobs.slice((page - 1) * limit, page * limit)
     return NextResponse.json({
       jobs: paged,
-      total: totalFallback,
+      total: totalAll,
       page,
-      totalPages: Math.ceil(totalFallback / limit),
+      totalPages: Math.ceil(totalAll / limit),
     })
   }
 }
@@ -290,7 +315,10 @@ export async function POST(request: NextRequest) {
 
   const user = await db.user.findUnique({
     where: { email: userEmail as string },
-    include: { employerProfile: true },
+    include: {
+      employerProfile: true,
+      companyMemberships: { take: 1 },
+    },
   })
 
   if (!user?.employerProfile) {
@@ -310,7 +338,8 @@ export async function POST(request: NextRequest) {
     salaryMin, 
     salaryMax,
     skills,
-    deadline 
+    deadline,
+    status: requestedStatus,
   } = body
 
   if (!title || !description || !jobType || !experienceLevel || !workMode) {
@@ -318,6 +347,9 @@ export async function POST(request: NextRequest) {
   }
 
   const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-") + "-" + Date.now()
+
+  const companyId = user.companyMemberships[0]?.companyId || 1
+  const isPublished = requestedStatus === "PUBLISHED"
 
   const job = await db.job.create({
     data: {
@@ -332,12 +364,12 @@ export async function POST(request: NextRequest) {
       city,
       salaryMin,
       salaryMax,
-      status: "PUBLISHED",
-      isActive: true,
-      publishedAt: new Date(),
+      companyId,
+      status: isPublished ? "PUBLISHED" : "DRAFT",
+      isActive: isPublished,
+      publishedAt: isPublished ? new Date() : null,
       deadline: deadline ? new Date(deadline) : null,
       employerId: user.clerkId,
-      // Skills will be added via separate endpoint
     },
   })
 

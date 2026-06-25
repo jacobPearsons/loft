@@ -1,5 +1,7 @@
 'use client'
 
+// TODO: Dead code - not imported anywhere. Remove if confirmed unused.
+
 import { EditorActions, EditorNodeType } from '@/lib/types'
 import {
   Dispatch,

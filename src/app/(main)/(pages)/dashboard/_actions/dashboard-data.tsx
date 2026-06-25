@@ -1,6 +1,9 @@
 'use server'
 
 import { db } from '@/lib/db'
+import { createLogger } from '@/lib/logger'
+
+const log = createLogger('dashboard-data')
 
 // Get user dashboard data - simplified version without Clerk
 export const getDashboardData = async () => {
@@ -18,7 +21,7 @@ export const getDashboardData = async () => {
       recentJobs: [],
     }
   } catch (error) {
-    console.error('Error fetching dashboard data:', error)
+    log.error('Error fetching dashboard data', error)
     return null
   }
 }

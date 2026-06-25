@@ -50,31 +50,45 @@ export const authOptions: NextAuthOptions = {
           email: user.email,
           name: user.name,
           image: user.profileImage,
+          rememberMe: (credentials as any).rememberMe === 'true',
         }
       },
     }),
   ],
   session: {
     strategy: "jwt",
-    maxAge: 24 * 60 * 60, // 24 hours
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   callbacks: {
     async jwt({ token, user, account }) {
-      if (user && account) {
-        // Check if user exists in database
+      const email = token.email || user?.email
+      if (email) {
         const dbUser = await db.user.findUnique({
-          where: { email: user.email! },
-          select: { isEmployer: true, id: true, isApplicant: true },
+          where: { email },
+          select: {
+            isEmployer: true,
+            id: true,
+            isApplicant: true,
+            companyMemberships: {
+              take: 1,
+              select: { companyId: true, role: true },
+            },
+          },
         })
         
-        // If new user (no role set), mark as needs onboarding
-        if (dbUser && dbUser.isApplicant === false && dbUser.isEmployer === false) {
-          token.needsOnboarding = true
+        if (dbUser) {
+          token.isEmployer = dbUser.isEmployer
+          token.id = dbUser.id
+          token.needsOnboarding = dbUser.isApplicant === false && dbUser.isEmployer === false
+          token.companyId = dbUser.companyMemberships[0]?.companyId
+          token.companyRole = dbUser.companyMemberships[0]?.role ?? undefined
         }
-        
-        token.isEmployer = dbUser?.isEmployer ?? false
-        token.id = dbUser?.id
+
+        if (user && account) {
+          token.rememberMe = (user as any).rememberMe ?? false
+        }
       }
+
       return token
     },
     async session({ session, token }) {
@@ -82,6 +96,8 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id?.toString() || ""
         session.user.isEmployer = token.isEmployer as boolean
         ;(session.user as any).needsOnboarding = token.needsOnboarding
+        session.user.companyId = token.companyId
+        session.user.companyRole = token.companyRole ?? undefined
       }
       return session
     },

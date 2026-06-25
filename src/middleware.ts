@@ -17,6 +17,7 @@ const publicRoutes = [
   '/api/auth/reset-password',
   '/api/payment/success',
   '/api/auth/[...nextauth]',
+  '/blocked',
 ]
 
 const protectedRoutes = [

@@ -1,3 +1,5 @@
+// TODO: Dead code - not imported anywhere. Remove if confirmed unused.
+
 import { create } from 'zustand'
 
 export interface Option {
@@ -11,8 +13,8 @@ export interface Option {
 }
 
 type FuzzieStore = {
-  googleFile: any
-  setGoogleFile: (googleFile: any) => void
+  googleFile: Record<string, unknown>
+  setGoogleFile: (googleFile: Record<string, unknown>) => void
   slackChannels: Option[]
   setSlackChannels: (slackChannels: Option[]) => void
   selectedSlackChannels: Option[]
@@ -21,7 +23,7 @@ type FuzzieStore = {
 
 export const useFuzzieStore = create<FuzzieStore>()((set) => ({
   googleFile: {},
-  setGoogleFile: (googleFile: any) => set({ googleFile }),
+  setGoogleFile: (googleFile: Record<string, unknown>) => set({ googleFile }),
   slackChannels: [],
   setSlackChannels: (slackChannels: Option[]) => set({ slackChannels }),
   selectedSlackChannels: [],

@@ -3,73 +3,57 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { db } from "@/lib/db"
 
-// In production, this would upload to Supabase/S3
-// For now, we'll store the file info in database
-
 export async function POST(request: NextRequest) {
+  const session = await getServerSession(authOptions)
+
   const { searchParams } = new URL(request.url)
   const email = searchParams.get("email")
+  const userEmail = email || session?.user?.email
 
-  const userEmail = email || (await getServerSession(authOptions))?.user?.email
-  
   if (!userEmail) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
   const user = await db.user.findUnique({
-    where: { email: userEmail as string },
+    where: { email: userEmail },
   })
 
   if (!user) {
     return NextResponse.json({ error: "User not found" }, { status: 404 })
   }
 
-  const formData = await request.formData()
-  const file = formData.get("file") as File
+  let fileUrl = ""
+  let fileName = "Resume.pdf"
+  let fileSize = 0
+  let fileType = "pdf"
 
-  if (!file) {
-    return NextResponse.json({ error: "No file provided" }, { status: 400 })
+  const contentType = request.headers.get("content-type") || ""
+
+  if (contentType.includes("application/json")) {
+    const body = await request.json()
+    fileUrl = body.fileUrl || ""
+    fileName = body.fileName || "Resume.pdf"
+    fileSize = body.fileSize || 0
+    fileType = body.fileType || "pdf"
+  } else {
+    return NextResponse.json(
+      { error: "Content-Type must be application/json. Upload files via UploadThing first." },
+      { status: 400 }
+    )
   }
 
-  // Validate file type
-  if (file.type !== "application/pdf") {
-    return NextResponse.json({ error: "Only PDF files are allowed" }, { status: 400 })
+  if (!fileUrl) {
+    return NextResponse.json({ error: "fileUrl is required" }, { status: 400 })
   }
-
-  // Validate file size (5MB max)
-  if (file.size > 5 * 1024 * 1024) {
-    return NextResponse.json({ error: "File too large (max 5MB)" }, { status: 400 })
-  }
-
-  // For MVP - store as base64 or external URL
-  // In production: upload to Supabase Storage
-  const fileUrl = `/uploads/resumes/${user.clerkId}/${file.name}`
 
   const resume = await db.resume.upsert({
     where: { userId: user.clerkId },
-    update: {
-      fileName: file.name,
-      fileUrl,
-      fileType: "pdf",
-      fileSize: file.size,
-      isUploaded: true,
-    },
-    create: {
-      userId: user.clerkId,
-      fileName: file.name,
-      fileUrl,
-      fileType: "pdf",
-      fileSize: file.size,
-      isUploaded: true,
-    },
+    update: { fileName, fileUrl, fileType, fileSize, isUploaded: true },
+    create: { userId: user.clerkId, fileName, fileUrl, fileType, fileSize, isUploaded: true },
   })
 
-  return NextResponse.json({ 
-    success: true, 
-    resume: {
-      id: resume.id,
-      fileName: resume.fileName,
-      fileUrl: resume.fileUrl,
-    }
+  return NextResponse.json({
+    success: true,
+    resume: { id: resume.id, fileName: resume.fileName, fileUrl: resume.fileUrl },
   })
 }

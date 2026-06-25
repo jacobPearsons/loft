@@ -20,6 +20,10 @@
 }
 
 @layer base {
+  *:focus-visible {
+    @apply outline-none ring-2 ring-emerald-400 ring-offset-2 ring-offset-background;
+  }
+
   :root {
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;

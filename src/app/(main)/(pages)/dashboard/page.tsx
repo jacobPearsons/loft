@@ -35,6 +35,7 @@ import {
   Briefcase as WorkIcon,
   Sparkles
 } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import type { JobSummary, SavedJobItem } from '@/features/dashboard';
@@ -292,7 +293,7 @@ const DashboardPage = () => {
   return (
     <div className="flex flex-col gap-6 p-6 bg-background min-h-screen">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-foreground">
             Welcome back, {userName}!
@@ -545,19 +546,19 @@ const DashboardPage = () => {
           )}
 
           {/* Saved Jobs */}
-          {data.savedJobs.length > 0 && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
-                  <Bookmark className="h-5 w-5 text-emerald-400" />
-                  Saved Jobs
-                </h2>
-                <Link href="/jobs">
-                  <Button variant="ghost" size="sm" className="text-muted-foreground">
-                    Browse More <ArrowRight className="h-4 w-4 ml-1" />
-                  </Button>
-                </Link>
-              </div>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
+                <Bookmark className="h-5 w-5 text-emerald-400" />
+                Saved Jobs
+              </h2>
+              <Link href="/jobs">
+                <Button variant="ghost" size="sm" className="text-muted-foreground">
+                  Browse More <ArrowRight className="h-4 w-4 ml-1" />
+                </Button>
+              </Link>
+            </div>
+            {data.savedJobs.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {data.savedJobs.slice(0, 3).map((sj) => (
                   <Link key={sj.id} href={`/jobs/${sj.job.slug || sj.jobId}`} className="block">
@@ -578,8 +579,27 @@ const DashboardPage = () => {
                   </Link>
                 ))}
               </div>
-            </div>
-          )}
+            ) : (
+              <Card className="bg-card border">
+                <CardContent className="p-8 text-center">
+                  <div className="relative w-40 h-40 mx-auto mb-4">
+                    <Image
+                      src="/images/No%20Saved%20Jobs.png"
+                      alt="No saved jobs"
+                      fill
+                      className="object-contain opacity-60"
+                    />
+                  </div>
+                  <p className="text-muted-foreground">No saved jobs yet. Browse jobs and save them for later.</p>
+                  <Link href="/jobs">
+                    <Button variant="outline" className="mt-4 border">
+                      Browse Jobs
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            )}
+          </div>
 
           {/* Fallback when no jobs but profile is complete */}
           {data.currentJobs.length === 0 && !needsProfileCompletion && (

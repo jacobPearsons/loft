@@ -1,14 +1,15 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { Badge } from '@/components/ui/badge'
-import { Briefcase, Loader2, ArrowLeft, Plus, X } from 'lucide-react'
+import MultipleSelector, { Option } from '@/components/ui/multiple-selector'
+import { Briefcase, Loader2, ArrowLeft, Plus } from 'lucide-react'
+import { toast } from 'sonner'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
@@ -16,7 +17,6 @@ export default function CreateJobPage() {
   const { data: session } = useSession()
   const router = useRouter()
   const [saving, setSaving] = useState(false)
-  const [skillInput, setSkillInput] = useState('')
   const [form, setForm] = useState({
     title: '',
     description: '',
@@ -32,17 +32,16 @@ export default function CreateJobPage() {
     skills: [] as string[],
   })
 
-  const addSkill = () => {
-    const s = skillInput.trim()
-    if (s && !form.skills.includes(s)) {
-      setForm(f => ({ ...f, skills: [...f.skills, s] }))
-      setSkillInput('')
+  const searchSkills = useCallback(async (value: string): Promise<Option[]> => {
+    if (!value) return []
+    try {
+      const res = await fetch(`/api/skills/search?q=${encodeURIComponent(value)}`)
+      const data = await res.json()
+      return data.map((s: { id: number; name: string }) => ({ value: s.name, label: s.name }))
+    } catch {
+      return []
     }
-  }
-
-  const removeSkill = (skill: string) => {
-    setForm(f => ({ ...f, skills: f.skills.filter(s => s !== skill) }))
-  }
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -71,10 +70,11 @@ export default function CreateJobPage() {
       })
 
       if (res.ok) {
+        toast.success('Job posted successfully!')
         router.push('/employer/dashboard')
       } else {
         const data = await res.json()
-        alert(data.error || 'Failed to create job')
+        toast.error(data.error || 'Failed to create job')
       }
     } finally {
       setSaving(false)
@@ -158,20 +158,17 @@ export default function CreateJobPage() {
 
               <div className="space-y-2">
                 <Label className="text-foreground/80">Required Skills</Label>
-                <div className="flex gap-2">
-                  <Input value={skillInput} onChange={e => setSkillInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addSkill())} className="bg-muted border text-foreground" placeholder="Type a skill and press Enter" />
-                  <Button type="button" variant="outline" onClick={addSkill} className="border"><Plus className="w-4 h-4" /></Button>
-                </div>
-                {form.skills.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {form.skills.map(skill => (
-                      <Badge key={skill} className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                        {skill}
-                        <button onClick={() => removeSkill(skill)} className="ml-2"><X className="w-3 h-3" /></button>
-                      </Badge>
-                    ))}
-                  </div>
-                )}
+                <MultipleSelector
+                  value={form.skills.map(s => ({ value: s, label: s }))}
+                  onChange={(options) => setForm(f => ({ ...f, skills: options.map(o => o.value) }))}
+                  onSearch={searchSkills}
+                  placeholder="Search or type a skill..."
+                  delay={200}
+                  creatable
+                  className="bg-muted border text-foreground"
+                  badgeClassName="bg-emerald-500/20 text-emerald-400"
+                  hidePlaceholderWhenSelected
+                />
               </div>
 
               <div className="space-y-2">

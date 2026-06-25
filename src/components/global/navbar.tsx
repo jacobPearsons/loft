@@ -18,7 +18,7 @@ export default function Navbar() {
 
   return (
     <header className="fixed right-0 left-0 top-0 py-4 px-4 bg-black/40 backdrop-blur-lg z-[100] flex items-center border-b-[1px] border justify-between">
-      <aside className="flex items-center gap-[2px] ml-8">
+      <aside className="flex items-center gap-[2px] ml-0 sm:ml-8">
         <LogoWithText />
       </aside>
       <nav className="absolute left-[50%] top-[50%] transform translate-x-[-50%] translate-y-[-50%] hidden md:block">
@@ -42,7 +42,7 @@ export default function Navbar() {
           <>
             {isAuthenticated ? (
               <div className="hidden md:flex items-center gap-2">
-                <Link href={(session.user as any).isEmployer ? "/employer/dashboard" : "/dashboard"}>
+                <Link href={session.user.isEmployer ? "/employer/dashboard" : "/dashboard"}>
                   <Button variant="ghost">Dashboard</Button>
                 </Link>
                 <span className="text-sm text-muted-foreground">

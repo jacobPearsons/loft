@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Briefcase, MapPin, Clock, FileText, ArrowRight, Loader2, AlertCircle } from 'lucide-react'
+import Image from 'next/image'
 import Link from 'next/link'
 
 interface Application {
@@ -102,13 +103,13 @@ export default function ApplicationsPage() {
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-4xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-bold text-foreground">My Applications</h1>
             <p className="text-muted-foreground mt-1">{applications.length} application{applications.length !== 1 ? 's' : ''} submitted</p>
           </div>
           <Link href="/jobs">
-            <Button className="bg-emerald-600 hover:bg-emerald-700">
+            <Button className="bg-emerald-600 hover:bg-emerald-700 w-full sm:w-auto">
               <Briefcase className="w-4 h-4 mr-2" /> Browse Jobs
             </Button>
           </Link>
@@ -117,7 +118,14 @@ export default function ApplicationsPage() {
         {applications.length === 0 ? (
           <Card className="bg-card border">
             <CardContent className="p-12 text-center">
-              <FileText className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+              <div className="relative w-48 h-48 mx-auto mb-4">
+                <Image
+                  src="/images/No%20Applications.png"
+                  alt="No applications yet"
+                  fill
+                  className="object-contain"
+                />
+              </div>
               <h3 className="text-xl font-semibold text-foreground mb-2">No Applications Yet</h3>
               <p className="text-muted-foreground mb-6">Start applying to jobs that match your skills</p>
               <Link href="/jobs">

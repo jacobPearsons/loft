@@ -29,33 +29,29 @@ export async function PATCH(
     return NextResponse.json({ error: "Application not found" }, { status: 404 })
   }
 
-  // Verify employer owns the job
+  // Verify employer owns the job or is a company member
   const user = await db.user.findUnique({
     where: { email: userEmail as string },
+    include: { companyMemberships: { take: 1 } },
   })
 
-  if (application.job.employerId !== user?.clerkId) {
+  if (!user) {
     return NextResponse.json({ error: "Not authorized" }, { status: 403 })
   }
 
-  // Toggle shortlist by adding/removing note
-  const currentNotes = application.employerNotes || ""
-  const shortlistMarker = "SHORTLISTED:"
-  
-  let newNotes = currentNotes
-  if (isShortlisted && !currentNotes.includes(shortlistMarker)) {
-    newNotes = currentNotes + (currentNotes ? "\n" : "") + `${shortlistMarker} true`
-  } else if (!isShortlisted) {
-    newNotes = currentNotes.replace(`${shortlistMarker} true`, "").trim()
+  const isOwner = application.job.employerId === user.clerkId
+  const isCompanyMember = user.companyMemberships.length > 0
+  if (!isOwner && !isCompanyMember) {
+    return NextResponse.json({ error: "Not authorized" }, { status: 403 })
   }
 
   const updated = await db.jobApplication.update({
     where: { id: applicationId },
-    data: { employerNotes: newNotes || null },
+    data: { isShortlisted },
   })
 
   return NextResponse.json({ 
     success: true,
-    isShortlisted: isShortlisted 
+    isShortlisted: updated.isShortlisted 
   })
 }

@@ -1,10 +1,11 @@
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { MapPin, Clock, DollarSign, ArrowRight } from 'lucide-react'
+import { MapPin, Clock, DollarSign, ArrowRight, Briefcase, Code, BarChart } from 'lucide-react'
 import Link from 'next/link'
+import { ScrollSplitCard } from '@/components/ui/scroll-split-card'
 
 const featuredJobs = [
   {
@@ -40,113 +41,100 @@ const featuredJobs = [
     tags: ['Python', 'ML', 'TensorFlow'],
     featured: false,
   },
-  {
-    id: 4,
-    title: 'DevOps Engineer',
-    company: 'CloudFirst',
-    location: 'Austin, TX',
-    type: 'Full Time',
-    salary: '$110k - $160k',
-    posted: '5 hours ago',
-    tags: ['AWS', 'Kubernetes', 'Docker'],
-    featured: true,
-  },
-  {
-    id: 5,
-    title: 'Frontend Developer',
-    company: 'WebWorks',
-    location: 'Remote',
-    type: 'Contract',
-    salary: '$60 - $80/hr',
-    posted: '1 day ago',
-    tags: ['Vue.js', 'JavaScript', 'CSS'],
-    featured: false,
-  },
-  {
-    id: 6,
-    title: 'Marketing Manager',
-    company: 'GrowthLabs',
-    location: 'Chicago, IL',
-    type: 'Full Time',
-    salary: '$80k - $120k',
-    posted: '4 days ago',
-    tags: ['Digital Marketing', 'SEO', 'Analytics'],
-    featured: false,
-  },
 ]
 
+const jobIcons = [Code, Briefcase, BarChart]
+const jobColors = ['#0a4d3b', '#1e3a5f', '#3b1f4e']
+
+const scrollCards = featuredJobs.map((job, i) => {
+  const Icon = jobIcons[i]
+  return {
+    title: job.title,
+    description: `${job.company}  ·  ${job.location}  ·  ${job.salary}`,
+    bgColor: jobColors[i],
+    textColor: '#ffffff',
+    icon: <Icon className="h-7 w-7 sm:h-8 sm:w-8 opacity-80" />,
+    href: `/jobs/${job.id}`,
+    content: (
+      <Link href={`/jobs/${job.id}`} className="flex flex-col h-full">
+        <div className="flex items-center justify-between mb-2 sm:mb-3">
+          <div className="p-2 sm:p-2.5 rounded-lg bg-black/20 border border-white/10">
+            <Icon className="h-4 w-4 sm:h-5 sm:w-5 opacity-90" />
+          </div>
+          {job.featured && (
+            <Badge className="bg-emerald-500/30 text-emerald-300 border-0 text-[10px] sm:text-xs px-1.5 sm:px-2 py-0">
+              Featured
+            </Badge>
+          )}
+        </div>
+        <h3 className="text-sm sm:text-xl font-semibold leading-tight mb-0.5">
+          {job.title}
+        </h3>
+        <p className="text-[11px] sm:text-sm opacity-70 mb-2 sm:mb-3">{job.company}</p>
+        <div className="flex flex-wrap gap-1 mb-2 sm:mb-3">
+          {job.tags.map((tag) => (
+            <span
+              key={tag}
+              className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded-full bg-black/20 border border-white/10 opacity-80"
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+        <div className="flex flex-col gap-0.5 sm:gap-1 text-[10px] sm:text-xs opacity-60 mb-auto">
+          <span className="flex items-center gap-1 sm:gap-1.5">
+            <MapPin className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+            {job.location}
+          </span>
+          <span className="flex items-center gap-1 sm:gap-1.5">
+            <Clock className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+            {job.posted}
+          </span>
+          <span className="flex items-center gap-1 sm:gap-1.5">
+            <DollarSign className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+            {job.salary}
+          </span>
+        </div>
+        <Button className="w-full bg-white/15 hover:bg-white/25 text-white border-0 mt-2 sm:mt-3 text-[10px] sm:text-xs h-7 sm:h-9 rounded-md">
+          Apply Now
+        </Button>
+      </Link>
+    ),
+  }
+})
+
 export function FeaturedJobs() {
+  const scrollRef = useRef<HTMLDivElement>(null)
+
   return (
-    <section className="w-full py-20 bg-neutral-950">
-      <div className="container px-4 md:px-6">
-        <div className="flex justify-between items-center mb-12">
+    <section className="w-full bg-neutral-950">
+      <div className="container px-4 md:px-6 pt-16 sm:pt-20 pb-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2">
           <div>
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Featured Jobs
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-1 sm:mb-2">
+              Available Jobs
             </h2>
-            <p className="text-neutral-400">
-              Hand-picked jobs from top companies
+            <p className="text-neutral-400 text-sm sm:text-base">
+              Scroll to explore featured opportunities
             </p>
           </div>
-          <Link href="/jobs">
-            <Button variant="outline" className="border-neutral-700 text-white hover:bg-neutral-800">
+          <Link href="/jobs" className="shrink-0">
+            <Button variant="outline" className="border-neutral-700 text-white hover:bg-neutral-800 w-full sm:w-auto text-xs sm:text-sm">
               View All Jobs
-              <ArrowRight className="ml-2 h-4 w-4" />
+              <ArrowRight className="ml-1.5 sm:ml-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </Button>
           </Link>
         </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {featuredJobs.map((job) => (
-            <Card key={job.id} className="bg-neutral-900/50 border-neutral-800 hover:border-emerald-500/50 transition-all duration-300 group">
-              <CardHeader className="pb-2">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle className="text-lg text-white group-hover:text-emerald-400 transition-colors">
-                      {job.title}
-                    </CardTitle>
-                    <p className="text-neutral-400 text-sm mt-1">{job.company}</p>
-                  </div>
-                  {job.featured && (
-                    <Badge variant="secondary" className="bg-emerald-500/20 text-emerald-400">
-                      Featured
-                    </Badge>
-                  )}
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {job.tags.map((tag) => (
-                    <Badge key={tag} variant="outline" className="border-neutral-700 text-neutral-400">
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-                
-                <div className="flex flex-col gap-2 text-sm text-neutral-500 mb-4">
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4" />
-                    {job.location}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
-                    {job.posted}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <DollarSign className="h-4 w-4" />
-                    {job.salary}
-                  </div>
-                </div>
-                
-                <Link href={`/jobs/${job.id}`}>
-                  <Button className="w-full bg-emerald-600 hover:bg-emerald-700">
-                    Apply Now
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+      </div>
+
+      <div
+        ref={scrollRef}
+        className="relative h-screen w-full overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+      >
+        <ScrollSplitCard
+          containerRef={scrollRef}
+          cards={scrollCards}
+        />
       </div>
     </section>
   )

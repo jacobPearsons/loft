@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import Link from 'next/link'
 import { Book, Headphones, LogOut } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { NotificationCenter } from '@/components/NotificationCenter'
@@ -24,8 +25,10 @@ const InfoBar = (props: Props) => {
     <div className="flex flex-row justify-end gap-6 items-center px-4 py-4 w-full bg-background ">
       <TooltipProvider>
         <Tooltip delayDuration={0}>
-          <TooltipTrigger>
-            <Headphones />
+          <TooltipTrigger asChild>
+            <Link href="https://hiring.pathmatch@gmail.com">
+              <Headphones />
+            </Link>
           </TooltipTrigger>
           <TooltipContent>
             <p>Contact Support</p>
@@ -34,8 +37,10 @@ const InfoBar = (props: Props) => {
       </TooltipProvider>
       <TooltipProvider>
         <Tooltip delayDuration={0}>
-          <TooltipTrigger>
-            <Book />
+          <TooltipTrigger asChild>
+            <Link href="/guide">
+              <Book />
+            </Link>
           </TooltipTrigger>
           <TooltipContent>
             <p>Guide</p>

@@ -2,9 +2,16 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { getSession } from "next-auth/react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Briefcase, Users, Loader2 } from "lucide-react"
+import { createLogger } from "@/lib/logger"
+
+const log = createLogger('role-selection')
+
+const AUTH_STORAGE_KEY = 'Loft Community_auth'
+const AUTH_TOKEN_KEY = 'Loft Community_token'
 
 export default function RoleSelectionPage() {
   const router = useRouter()
@@ -21,13 +28,35 @@ export default function RoleSelectionPage() {
       
       if (res.ok) {
         localStorage.removeItem('pendingOnboarding')
+
+        // Refresh the NextAuth session so the JWT picks up the updated role
+        const session = await getSession()
+        if (session?.user) {
+          const nameParts = (session.user.name || '').split(' ')
+          const authUser = {
+            id: session.user.id,
+            email: session.user.email || '',
+            firstName: nameParts[0] || '',
+            lastName: nameParts.slice(1).join(' ') || '',
+            name: session.user.name || '',
+            profileImage: session.user.image || undefined,
+            role: session.user.isEmployer ? 'employer' : 'job_seeker' as const,
+            isVerified: true,
+            tier: 'Free' as const,
+            credits: '10',
+            createdAt: new Date(),
+          }
+          localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authUser))
+          localStorage.setItem(AUTH_TOKEN_KEY, `session_${session.user.id}`)
+        }
+
         router.push(role === "EMPLOYER" ? "/employer/dashboard" : "/dashboard")
       } else {
         const data = await res.json()
         alert(data.message || "Error saving role")
       }
     } catch (error) {
-      console.error(error)
+      log.error('Role selection failed', error)
       alert("An error occurred")
     } finally {
       setLoading(null)
@@ -35,7 +64,7 @@ export default function RoleSelectionPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4 relative overflow-x-hidden">
       {/* Decorative grid background */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(5,150,105,0.07)_1px,transparent_1px),linear-gradient(to_bottom,rgba(5,150,105,0.07)_1px,transparent_1px)] bg-[size:32px_32px]"></div>
       <div className="absolute inset-0 bg-gradient-to-b from-neutral-950 via-transparent to-neutral-950"></div>

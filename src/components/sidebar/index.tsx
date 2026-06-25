@@ -3,16 +3,10 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import React from 'react'
 import { useSession } from 'next-auth/react'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
 import { menuOptions, employerMenuOptions } from '@/lib/constant'
 import clsx from 'clsx'
-import { X } from 'lucide-react'
-import { LogoWithText } from '../global/logo'
+import { X, Bell } from 'lucide-react'
+import { Logo, LogoWithText } from '../global/logo'
 
 type Props = {
   isOpen?: boolean
@@ -23,48 +17,61 @@ type Props = {
 const MenuOptions = ({ isOpen, onClose, mobile }: Props) => {
   const pathName = usePathname()
   const { data: session } = useSession()
-  const isEmployer = (session?.user as any)?.isEmployer ?? false
+  const isEmployer = session?.user?.isEmployer ?? false
   const options = isEmployer ? employerMenuOptions : menuOptions
 
+  const isActive = (href: string) => {
+    const path = href.split('?')[0]
+    if (path === '/employer/dashboard') {
+      return pathName === '/employer/dashboard'
+    }
+    return pathName === path
+  }
+
   const content = (
-    <nav className="bg-background h-screen overflow-scroll justify-between flex items-center flex-col gap-10 py-6 px-2">
-      <div className="flex items-center justify-center flex-col gap-8">
-        <Link className="flex font-bold flex-row" href="/" onClick={onClose}>
-          <LogoWithText / >
+    <nav className="flex flex-col h-full bg-background">
+      <div className="flex items-center gap-3 px-4 h-16 border-b border-white/10 shrink-0">
+        <Logo variant="icon" width={28} height={28} />
+        <span className="font-semibold text-white text-sm">LoftCommunity</span>
+      </div>
+
+      <div className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+        {options.map((menuItem) => {
+          const Icon = menuItem.icon
+          const active = isActive(menuItem.href)
+          return (
+            <Link
+              key={menuItem.name}
+              href={menuItem.href}
+              onClick={onClose}
+              className={clsx(
+                'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
+                active
+                  ? 'bg-emerald-500/10 text-emerald-400'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+              )}
+            >
+              <Icon className="h-5 w-5 shrink-0" />
+              <span>{menuItem.name}</span>
+            </Link>
+          )
+        })}
+      </div>
+
+      <div className="border-t border-white/10 p-3 shrink-0">
+        <Link
+          href="/notifications"
+          onClick={onClose}
+          className={clsx(
+            'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
+            isActive('/notifications')
+              ? 'bg-emerald-500/10 text-emerald-400'
+              : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+          )}
+        >
+          <Bell className="h-5 w-5 shrink-0" />
+          <span>Notifications</span>
         </Link>
-        <TooltipProvider>
-          {options.map((menuItem) => (
-            <ul key={menuItem.name}>
-              <Tooltip delayDuration={0}>
-                <TooltipTrigger>
-                  <li>
-                    <Link
-                      href={menuItem.href}
-                      onClick={onClose}
-                      className={clsx(
-                        'group h-11 w-11 flex items-center justify-center scale-[1.5] rounded-lg p-[4px] cursor-pointer',
-                        {
-                          'dark:bg-emerald-800/50 bg-emerald-500/20':
-                            pathName === menuItem.href,
-                        }
-                      )}
-                    >
-                      <menuItem.Component
-                        selected={pathName === menuItem.href}
-                      />
-                    </Link>
-                  </li>
-                </TooltipTrigger>
-                <TooltipContent
-                  side="right"
-                  className="bg-black/10 backdrop-blur-xl"
-                >
-                  <p>{menuItem.name}</p>
-                </TooltipContent>
-              </Tooltip>
-            </ul>
-          ))}
-        </TooltipProvider>
       </div>
     </nav>
   )
@@ -75,14 +82,53 @@ const MenuOptions = ({ isOpen, onClose, mobile }: Props) => {
         {isOpen && (
           <div className="fixed inset-0 z-50 md:hidden">
             <div className="fixed inset-0 bg-black/60" onClick={onClose} />
-            <div className="fixed left-0 top-0 bottom-0 w-20 bg-background animate-in slide-in-from-left">
-              <button
-                onClick={onClose}
-                className="absolute -right-8 top-4 p-2 text-foreground"
-              >
-                <X className="w-5 h-5" />
-              </button>
-              {content}
+            <div className="fixed left-0 top-0 bottom-0 w-[280px] max-w-[85vw] bg-background border-r border shadow-2xl animate-in slide-in-from-left flex flex-col">
+              <div className="flex items-center justify-between px-4 h-16 border-b border shrink-0">
+                <Link href="/" onClick={onClose}>
+                  <LogoWithText />
+                </Link>
+                <button
+                  onClick={onClose}
+                  className="p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+                <p className="text-xs font-medium text-muted-foreground px-3 pb-2 uppercase tracking-wider">
+                  {isEmployer ? 'Employer' : 'Menu'}
+                </p>
+                {options.map((menuItem) => {
+                  const Icon = menuItem.icon
+                  const active = isActive(menuItem.href)
+                  return (
+                    <Link
+                      key={menuItem.name}
+                      href={menuItem.href}
+                      onClick={onClose}
+                      className={clsx(
+                        'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
+                        active
+                          ? 'bg-emerald-500/10 text-emerald-400'
+                          : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                      )}
+                    >
+                      <Icon className="h-5 w-5 shrink-0" />
+                      <span>{menuItem.name}</span>
+                    </Link>
+                  )
+                })}
+              </nav>
+              <div className="border-t border p-3 shrink-0">
+                <Link
+                  href="/notifications"
+                  onClick={onClose}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                >
+                  <Bell className="h-5 w-5" />
+                  <span>Notifications</span>
+                </Link>
+              </div>
             </div>
           </div>
         )}
@@ -90,7 +136,7 @@ const MenuOptions = ({ isOpen, onClose, mobile }: Props) => {
     )
   }
 
-  return <div className="hidden md:flex">{content}</div>
+  return <div className="hidden md:flex w-56 shrink-0 border-r border-white/10 bg-background">{content}</div>
 }
 
 export default MenuOptions

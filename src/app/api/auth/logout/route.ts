@@ -6,6 +6,9 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import * as authService from '@/features/auth/services/authService'
+import { createLogger } from '@/lib/logger'
+
+const log = createLogger('auth:logout')
 
 export async function POST(_request: NextRequest) {
   try {
@@ -13,7 +16,7 @@ export async function POST(_request: NextRequest) {
     
     return NextResponse.json(response, { status: 200 })
   } catch (error) {
-    console.error('Logout error:', error)
+    log.error('Logout error', error)
     return NextResponse.json(
       { success: false, message: 'Internal server error' },
       { status: 500 }

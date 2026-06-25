@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -9,7 +10,9 @@ import ApplyJobModal, { JobApplicationData } from '@/components/forms/ApplyJobMo
 import { 
   Search, MapPin, Clock, DollarSign, Briefcase, Filter, ChevronDown, Loader2
 } from 'lucide-react'
+import Image from 'next/image'
 import Link from 'next/link'
+import { SaveJobButton } from '@/components/global/save-job-button'
 
 interface JobListing {
   id: number
@@ -29,6 +32,7 @@ interface JobListing {
   publishedAt: string
   company: { companyName: string; companyLogo: string; city: string }
   skills: string[]
+  source?: string
 }
 
 const jobTypes = ['', 'FULL_TIME', 'PART_TIME', 'CONTRACT', 'INTERNSHIP']
@@ -39,6 +43,7 @@ const workModes = ['', 'ONSITE', 'REMOTE', 'HYBRID']
 const workLabels: Record<string, string> = { '': 'All', ONSITE: 'On-site', REMOTE: 'Remote', HYBRID: 'Hybrid' }
 
 export default function JobsPage() {
+  const router = useRouter()
   const [jobs, setJobs] = useState<JobListing[]>([])
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -117,7 +122,10 @@ export default function JobsPage() {
     const res = await fetch(`/api/jobs/${applicationData.jobId}/apply`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ coverLetter: applicationData.coverLetter }),
+      body: JSON.stringify({
+        coverLetter: applicationData.coverLetter,
+        resumeUrl: applicationData.resumeUrl,
+      }),
     })
     if (!res.ok) {
       const data = await res.json()
@@ -125,7 +133,7 @@ export default function JobsPage() {
     }
     setIsModalOpen(false)
     setSelectedJob(null)
-    fetchJobs()
+    router.push('/dashboard')
   }
 
   return (
@@ -263,7 +271,14 @@ export default function JobsPage() {
             
             {jobs.length === 0 ? (
               <div className="text-center py-20">
-                <Briefcase className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                <div className="relative w-48 h-48 mx-auto mb-4">
+                  <Image
+                    src="/images/No%20Jobs.png"
+                    alt="No jobs found"
+                    fill
+                    className="object-contain"
+                  />
+                </div>
                 <h3 className="text-xl text-foreground font-semibold mb-2">No jobs found</h3>
                 <p className="text-muted-foreground">Try adjusting your search or filters</p>
               </div>
@@ -273,18 +288,32 @@ export default function JobsPage() {
                   <Card key={job.id} className="bg-card/50 border hover:border-emerald-500/50 transition-all">
                     <CardContent className="p-6">
                       <div className="flex flex-col md:flex-row md:items-center gap-4">
-                        <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center">
-                          <Briefcase className="h-8 w-8 text-muted-foreground" />
+                        <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center overflow-hidden">
+                          {job.company?.companyLogo ? (
+                            <Image src={job.company.companyLogo} alt={job.company.companyName} width={64} height={64} className="w-full h-full object-cover" unoptimized />
+                          ) : (
+                            <Image
+                              src="/images/Company%20Avatar%20Placeholder.png"
+                              alt=""
+                              width={64}
+                              height={64}
+                              className="object-cover opacity-60"
+                            />
+                          )}
                         </div>
                         
                         <div className="flex-1">
                           <div className="flex items-start justify-between">
                             <div>
                               <h3 className="text-lg font-semibold text-foreground hover:text-emerald-400">
-                                <Link href={`/jobs/${job.id}`}>{job.title}</Link>
+                                <Link href={`/jobs/${job.slug}`}>{job.title}</Link>
                               </h3>
                               <p className="text-muted-foreground">{job.company?.companyName}</p>
+                              {job.source === 'jobicy' && (
+                                <Badge className="ml-2 bg-blue-500/20 text-blue-400 text-xs">Jobicy</Badge>
+                              )}
                             </div>
+                            <SaveJobButton jobId={job.id} />
                           </div>
                           
                           <div className="flex flex-wrap gap-4 mt-3 text-sm text-muted-foreground">

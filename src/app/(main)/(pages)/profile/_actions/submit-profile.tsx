@@ -1,6 +1,9 @@
 'use server'
 
 import { sendEmail } from '@/lib/email'
+import { createLogger } from '@/lib/logger'
+
+const log = createLogger('submit-profile')
 
 interface ProfileData {
   firstName: string
@@ -37,7 +40,7 @@ export const submitProfile = async (profileData: ProfileData, englishTestResult?
       emailSent
     }
   } catch (error) {
-    console.error('Error submitting profile:', error)
+    log.error('Error submitting profile', error)
     return { success: false, message: 'Failed to submit profile' }
   }
 }

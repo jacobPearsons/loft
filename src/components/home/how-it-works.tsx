@@ -45,7 +45,7 @@ export function HowItWorks() {
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {steps.map((step, index) => (
-            <div key={step.number} className=" Connectorrelative">
+            <div key={step.number} className="relative">
               {/* Line */}
               {index < steps.length - 1 && (
                 <div className="hidden lg:block absolute top-1/2 left-full w-full h-0.5 bg-neutral-800 -translate-y-1/2 z-0"></div>

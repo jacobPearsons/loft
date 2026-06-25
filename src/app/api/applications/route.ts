@@ -7,6 +7,7 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const email = searchParams.get("email")
   const jobIdParam = searchParams.get("jobId")
+  const statusParam = searchParams.get("status")
 
   const userEmail = email || (await getServerSession(authOptions))?.user?.email
   
@@ -23,6 +24,10 @@ export async function GET(request: NextRequest) {
   }
 
   const where: Record<string, unknown> = {}
+
+  if (statusParam) {
+    where.status = statusParam
+  }
 
   if (jobIdParam) {
     where.jobId = parseInt(jobIdParam)
@@ -63,7 +68,7 @@ export async function GET(request: NextRequest) {
     englishTestScore: app.englishTestScore,
     englishTestRequired: app.englishTestRequired,
     employerNotes: app.employerNotes,
-    isShortlisted: app.employerNotes?.includes("SHORTLISTED:") ?? false,
+    isShortlisted: app.isShortlisted,
     job: {
       id: app.job.id,
       title: app.job.title,

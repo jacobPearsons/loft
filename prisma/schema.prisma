@@ -102,6 +102,9 @@ model User {
   sentMessages        Message[] @relation("SentMessages")
   receivedMessages    Message[] @relation("ReceivedMessages")
   
+  // Company Membership
+  companyMemberships  CompanyMember[]
+  
   // NextAuth
   accounts        Account[]
   sessions        Session[]
@@ -255,6 +258,43 @@ model EmployerProfile {
 }
 
 // ============================================
+// COMPANY (Single-tenant: Loft Community)
+// ============================================
+
+model Company {
+  id              Int       @id @default(autoincrement())
+  name            String    @default("Loft Community")
+  slug            String    @unique @default("loft-community")
+  description     String?   @db.Text
+  logo            String?
+  website         String?
+  contactEmail    String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  members         CompanyMember[]
+  jobs            Job[]
+}
+
+model CompanyMember {
+  id              Int         @id @default(autoincrement())
+  companyId       Int
+  userId          String
+  role            CompanyRole @default(EMPLOYER)
+  createdAt       DateTime    @default(now())
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [clerkId], onDelete: Cascade)
+
+  @@unique([companyId, userId])
+}
+
+enum CompanyRole {
+  ADMIN
+  EMPLOYER
+}
+
+// ============================================
 // JOBS
 // ============================================
 
@@ -304,7 +344,11 @@ model Job {
   viewsCount      Int         @default(0)
   applicationsCount Int       @default(0)
   
-  // Employer
+  // Company (required after migration - Loft Community)
+  companyId       Int?
+  company         Company? @relation(fields: [companyId], references: [id])
+
+  // Employer (optional - the assigned employer managing this job)
   employerId      String
   employer        EmployerProfile @relation(fields: [employerId], references: [userId])
   
@@ -372,6 +416,9 @@ model JobApplication {
   
   // Notes
   employerNotes   String?         @db.Text
+  
+  // Shortlist (DB column replaces localStorage hack)
+  isShortlisted   Boolean         @default(false)
   
   // Relations
   interview       Interview?
@@ -699,13 +746,14 @@ model JobRequiredSkill {
 // ============================================
 
 model Message {
-  id          Int       @id @default(autoincrement())
-  senderId    String
-  receiverId  String
-  content     String    @db.Text
-  jobId       Int?
-  readAt      DateTime?
-  createdAt   DateTime  @default(now())
+  id              Int       @id @default(autoincrement())
+  senderId        String
+  receiverId      String
+  content         String    @db.Text
+  jobId           Int?
+  conversationId  String?   // Groups messages: "jobId-userId" or "userId-userId"
+  readAt          DateTime?
+  createdAt       DateTime  @default(now())
   
   sender      User      @relation("SentMessages", fields: [senderId], references: [clerkId])
   receiver    User      @relation("ReceivedMessages", fields: [receiverId], references: [clerkId])
@@ -744,4 +792,32 @@ model NotificationPreference {
   newMessages             Boolean  @default(true)
   jobAlerts               Boolean  @default(true)
   marketing               Boolean  @default(true)
+}
+
+// ============================================
+// RATE LIMITING
+// ============================================
+
+model RateLimit {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique
+  count     Int      @default(1)
+  windowStart DateTime
+  expiresAt DateTime
+
+  @@index([expiresAt])
+}
+
+// ============================================
+// CACHE ENTRIES
+// ============================================
+
+model CacheEntry {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  data      Json
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  @@index([expiresAt])
 }

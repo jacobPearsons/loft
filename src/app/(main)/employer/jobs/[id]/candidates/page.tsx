@@ -94,14 +94,14 @@ export default function CandidatesPage() {
           <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard
         </Link>
 
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-8">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Candidates</h1>
             <p className="text-muted-foreground mt-1">
               {jobTitle} &middot; {candidates.length} candidate{candidates.length !== 1 ? 's' : ''}
             </p>
           </div>
-          <Badge className="bg-emerald-500/20 text-emerald-400" variant="outline">
+          <Badge className="bg-emerald-500/20 text-emerald-400 self-start sm:self-auto" variant="outline">
             <Users className="w-4 h-4 mr-1" /> {candidates.length} Total
           </Badge>
         </div>

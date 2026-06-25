@@ -8,9 +8,9 @@ export type ConnectionProviderProps = {
     webhookName: string
     guildName: string
   }
-  setDiscordNode: React.Dispatch<React.SetStateAction<any>>
+  setDiscordNode: React.Dispatch<React.SetStateAction<ConnectionProviderProps['discordNode']>>
   googleNode: {}[]
-  setGoogleNode: React.Dispatch<React.SetStateAction<any>>
+  setGoogleNode: React.Dispatch<React.SetStateAction<ConnectionProviderProps['googleNode']>>
   notionNode: {
     accessToken: string
     databaseId: string
@@ -22,7 +22,7 @@ export type ConnectionProviderProps = {
     notion?: string
     slack?: string
   }
-  setNotionNode: React.Dispatch<React.SetStateAction<any>>
+  setNotionNode: React.Dispatch<React.SetStateAction<ConnectionProviderProps['notionNode']>>
   slackNode: {
     appId: string
     authedUserId: string
@@ -33,7 +33,7 @@ export type ConnectionProviderProps = {
     teamName: string
     content: string
   }
-  setSlackNode: React.Dispatch<React.SetStateAction<any>>
+  setSlackNode: React.Dispatch<React.SetStateAction<ConnectionProviderProps['slackNode']>>
   setWorkFlowTemplate: React.Dispatch<
     React.SetStateAction<{
       discord?: string

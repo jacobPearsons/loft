@@ -33,6 +33,7 @@ interface ApplicationCardProps {
   onStatusChange?: (status: ApplicationStatus) => void;
   showActions?: boolean;
   className?: string;
+  onScheduleInterview?: () => void;
 }
 
 const statusConfig: Record<ApplicationStatus, { 
@@ -108,6 +109,7 @@ export function ApplicationCard({
   onStatusChange,
   showActions = true,
   className,
+  onScheduleInterview,
 }: ApplicationCardProps) {
   const status = statusConfig[application.status];
   const stage = STAGE_CONFIG[statusToStage[application.status] as keyof typeof STAGE_CONFIG];
@@ -242,7 +244,11 @@ export function ApplicationCard({
                   className="bg-emerald-600 hover:bg-emerald-700"
                   onClick={(e) => {
                     e.stopPropagation();
-                    onStatusChange('INTERVIEW');
+                    if (onScheduleInterview) {
+                      onScheduleInterview();
+                    } else {
+                      onStatusChange('INTERVIEW');
+                    }
                   }}
                 >
                   Schedule Interview

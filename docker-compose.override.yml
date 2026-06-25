@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  app:
+    environment:
+      NODE_ENV: development
+    ports:
+      - "${PORT:-3000}:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    command: bun run dev
+
+  postgres:
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"

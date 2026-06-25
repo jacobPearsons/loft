@@ -2,7 +2,9 @@ import { PrismaClient } from '@prisma/client'
 import * as fs from 'fs'
 import * as path from 'path'
 
-const db = new PrismaClient()
+const db = new PrismaClient({
+  log: ['warn', 'error'],
+})
 
 interface JobSeed {
   id?: string
@@ -60,11 +62,72 @@ function slugify(title: string, id: string): string {
 async function main() {
   console.log('🌱 Seeding database...')
 
+  // ============================================
+  // STEP 1: Ensure Loft Community company exists
+  // ============================================
+  console.log('\n📋 Setting up Loft Community company...')
+
+  const company = await db.company.upsert({
+    where: { slug: 'loft-community' },
+    update: {
+      name: 'Loft Community',
+      description: 'The official Loft Community employment platform',
+    },
+    create: {
+      name: 'Loft Community',
+      slug: 'loft-community',
+      description: 'The official Loft Community employment platform',
+      contactEmail: 'admin@loftcommunity.com',
+    },
+  })
+  console.log(`  ✓ Loft Community company (id=${company.id})`)
+
+  // ============================================
+  // STEP 2: Migrate existing employers → CompanyMembers
+  // ============================================
+  console.log('\n📋 Migrating existing employers to CompanyMembers...')
+
+  const existingEmployers = await db.employerProfile.findMany({
+    include: { user: true },
+  })
+
+  let membersCreated = 0
+  for (const emp of existingEmployers) {
+    const existing = await db.companyMember.findUnique({
+      where: { companyId_userId: { companyId: company.id, userId: emp.userId } },
+    })
+    if (!existing) {
+      await db.companyMember.create({
+        data: {
+          companyId: company.id,
+          userId: emp.userId,
+          role: membersCreated === 0 ? 'ADMIN' : 'EMPLOYER',
+        },
+      })
+      membersCreated++
+    }
+  }
+  console.log(`  ✓ ${membersCreated} CompanyMembers created (first user is ADMIN)`)
+
+  // ============================================
+  // STEP 3: Migrate existing jobs → set companyId
+  // ============================================
+  console.log('\n📋 Migrating existing jobs to Loft Community company...')
+
+  const { count: jobsMigrated } = await db.job.updateMany({
+    where: { companyId: null },
+    data: { companyId: company.id },
+  })
+  console.log(`  ✓ ${jobsMigrated} jobs migrated to Loft Community`)
+
+  // ============================================
+  // STEP 4: Seed jobs from JSON
+  // ============================================
   const dataPath = path.join(process.cwd(), 'src', 'data', 'jobs.json')
   const rawData = fs.readFileSync(dataPath, 'utf-8')
   const jobsData: JobSeed[] = JSON.parse(rawData)
 
-  console.log(`📦 Loaded ${jobsData.length} jobs from JSON`)
+  console.log(`\n📦 Loaded ${jobsData.length} jobs from JSON`)
 
   const companyMap = new Map<string, string>()
 
@@ -155,6 +218,7 @@ async function main() {
         requiredSkills: job.requiredSkills,
         status: 'PUBLISHED' as any,
         isActive: true,
+        companyId: company.id,
         employerId,
         publishedAt: createdAt,
         createdAt,
@@ -162,18 +226,16 @@ async function main() {
     })
 
     for (const skillName of job.requiredSkills) {
-      let skill = await db.skill.findUnique({ where: { name: skillName } })
-      if (!skill) {
-        skill = await db.skill.create({ data: { name: skillName, isCustom: false } })
-      }
-      const existingRelation = await db.jobRequiredSkill.findFirst({
-        where: { jobId: dbJob.id, skillId: skill.id },
+      const skill = await db.skill.upsert({
+        where: { name: skillName },
+        update: {},
+        create: { name: skillName, isCustom: false },
       })
-      if (!existingRelation) {
-        await db.jobRequiredSkill.create({
-          data: { jobId: dbJob.id, skillId: skill.id, isRequired: true },
-        })
-      }
+      await db.jobRequiredSkill.upsert({
+        where: { jobId_skillId: { jobId: dbJob.id, skillId: skill.id } },
+        update: {},
+        create: { jobId: dbJob.id, skillId: skill.id, isRequired: true },
+      })
     }
 
     created++

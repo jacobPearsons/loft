@@ -3,21 +3,28 @@ import React from 'react'
 import ProfilePicture from './_components/profile-picture'
 import { EmailVerification } from './_components/email-verification'
 import { db } from '@/lib/db'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 import { Shield, Mail, User, Camera } from 'lucide-react'
+import { redirect } from 'next/navigation'
 
 export const dynamic = 'force-dynamic'
 
-type Props = {}
+const Settings = async () => {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.email) redirect('/auth')
 
-const Settings = async (props: Props) => {
-  const user = await db.user.findFirst()
+  const user = await db.user.findUnique({ where: { email: session.user.email } })
 
   const removeProfileImage = async () => {
     'use server'
-    if (!user) return null
+    const s = await getServerSession(authOptions)
+    if (!s?.user?.email) return null
+    const u = await db.user.findUnique({ where: { email: s.user.email } })
+    if (!u) return null
     const response = await db.user.update({
       where: {
-        clerkId: user.clerkId,
+        clerkId: u.clerkId,
       },
       data: {
         profileImage: '',
@@ -28,10 +35,13 @@ const Settings = async (props: Props) => {
 
   const uploadProfileImage = async (image: string) => {
     'use server'
-    if (!user) return null
+    const s = await getServerSession(authOptions)
+    if (!s?.user?.email) return null
+    const u = await db.user.findUnique({ where: { email: s.user.email } })
+    if (!u) return null
     const response = await db.user.update({
       where: {
-        clerkId: user.clerkId,
+        clerkId: u.clerkId,
       },
       data: {
         profileImage: image,

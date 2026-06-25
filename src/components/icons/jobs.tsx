@@ -1,3 +1,5 @@
+// TODO: Unused - no imports found. Remove if confirmed.
+
 import React from 'react'
 import { Briefcase } from 'lucide-react'
 

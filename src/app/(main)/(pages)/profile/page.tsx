@@ -1,16 +1,17 @@
 'use client'
 
-import { useState, useRef, useEffect, useCallback } from 'react'
-import { useSession } from 'next-auth/react'
+import { useState, useEffect, useCallback } from 'react'
+import { useSession, getSession } from 'next-auth/react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { 
-  Upload, 
-  FileText, 
-  MapPin, 
+import MultipleSelector, { Option } from '@/components/ui/multiple-selector'
+import {
+  Upload,
+  FileText,
+  MapPin,
   Briefcase,
   Languages,
   CheckCircle,
@@ -20,10 +21,16 @@ import {
   ArrowLeft,
   Send,
   Loader2,
-  Save
+  Save,
+  Trash2,
 } from 'lucide-react'
 import Link from 'next/link'
+import { UploadButton } from '@uploadthing/react'
+import type { OurFileRouter } from '@/app/api/uploadthing/core'
 import { submitProfile } from '../profile/_actions/submit-profile'
+import { createLogger } from '@/lib/logger'
+
+const log = createLogger('profile')
 import { EmailVerificationBanner } from '@/components/global/email-verification-banner'
 
 interface ProfileData {
@@ -97,8 +104,8 @@ export default function ProfilePage() {
     testDate: null,
   })
 
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const [newSkill, setNewSkill] = useState('')
+  const [uploadingResume, setUploadingResume] = useState(false)
+  const [searchSkillLoading, setSearchSkillLoading] = useState(false)
 
   const fetchProfile = useCallback(async () => {
     if (!email) return
@@ -155,7 +162,7 @@ export default function ProfilePage() {
         })
       }
     } catch (err) {
-      console.error('Error loading profile:', err)
+      log.error('Error loading profile', err)
     } finally {
       setLoading(false)
     }
@@ -183,6 +190,7 @@ export default function ProfilePage() {
         body: JSON.stringify(payload),
       })
       if (!res.ok) throw new Error('Failed to save')
+      await getSession()
       setSaveMessage('Profile saved successfully!')
     } catch (err) {
       setSaveMessage('Failed to save profile. Please try again.')
@@ -191,57 +199,18 @@ export default function ProfilePage() {
     }
   }
 
-  const handleFileUpload = () => {
-    fileInputRef.current?.click()
-  }
-
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file || !email) return
-
-    setResume({
-      name: file.name,
-      size: file.size,
-      uploaded: false,
-      url: null,
-    })
-
-    const formData = new FormData()
-    formData.append('file', file)
-
+  const searchSkills = async (value: string): Promise<Option[]> => {
+    if (!value) return []
+    setSearchSkillLoading(true)
     try {
-      const res = await fetch(`/api/users/resume?email=${encodeURIComponent(email)}`, {
-        method: 'POST',
-        body: formData,
-      })
-      if (!res.ok) throw new Error('Upload failed')
+      const res = await fetch(`/api/skills/search?q=${encodeURIComponent(value)}`)
       const data = await res.json()
-      setResume({
-        name: data.resume.fileName,
-        size: file.size,
-        uploaded: true,
-        url: data.resume.fileUrl,
-      })
+      return data.map((s: { id: number; name: string }) => ({ value: s.name, label: s.name }))
     } catch {
-      setResume(null)
+      return []
+    } finally {
+      setSearchSkillLoading(false)
     }
-  }
-
-  const handleAddSkill = () => {
-    if (newSkill && !profileData.skills.includes(newSkill)) {
-      setProfileData({
-        ...profileData,
-        skills: [...profileData.skills, newSkill],
-      })
-      setNewSkill('')
-    }
-  }
-
-  const removeSkill = (skill: string) => {
-    setProfileData({
-      ...profileData,
-      skills: profileData.skills.filter(s => s !== skill),
-    })
   }
 
   // English proficiency test
@@ -327,6 +296,7 @@ export default function ProfilePage() {
 
     // Auto-save english test results
     if (email) {
+      setSaving(true)
       fetch(`/api/users/profile?email=${encodeURIComponent(email)}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -335,7 +305,16 @@ export default function ProfilePage() {
           englishTestLevel: level,
           englishTestDate: new Date().toISOString(),
         }),
-      }).catch(console.error)
+      })
+        .then((res) => {
+          if (res.ok) setSaveMessage('Test results saved successfully!')
+          else setSaveMessage('Failed to save test results')
+        })
+        .catch((err: unknown) => {
+          log.error('Save test result failed', err)
+          setSaveMessage('Failed to save test results')
+        })
+        .finally(() => setSaving(false))
     }
   }
 
@@ -386,10 +365,10 @@ export default function ProfilePage() {
         <h1 className="text-3xl font-bold text-foreground mb-8">My Profile</h1>
         
         <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="bg-card border">
-            <TabsTrigger value="profile" className="data-[state=active]:bg-emerald-600">Profile</TabsTrigger>
-            <TabsTrigger value="resume" className="data-[state=active]:bg-emerald-600">Resume</TabsTrigger>
-            <TabsTrigger value="test" className="data-[state=active]:bg-emerald-600">English Test</TabsTrigger>
+          <TabsList className="bg-card border w-full flex-nowrap overflow-x-auto">
+            <TabsTrigger value="profile" className="data-[state=active]:bg-emerald-600 flex-1 sm:flex-none">Profile</TabsTrigger>
+            <TabsTrigger value="resume" className="data-[state=active]:bg-emerald-600 flex-1 sm:flex-none">Resume</TabsTrigger>
+            <TabsTrigger value="test" className="data-[state=active]:bg-emerald-600 flex-1 sm:flex-none">English Test</TabsTrigger>
           </TabsList>
           
           {/* Profile Tab */}
@@ -546,24 +525,19 @@ export default function ProfilePage() {
                 
                 <div>
                   <h3 className="text-lg font-semibold text-foreground mb-4">Skills</h3>
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {profileData.skills.map((skill) => (
-                      <Badge key={skill} className="bg-emerald-500/20 text-emerald-400 px-3 py-1">
-                        {skill}
-                        <button onClick={() => removeSkill(skill)} className="ml-2 text-xs p-1.5">×</button>
-                      </Badge>
-                    ))}
-                  </div>
-                  <div className="flex gap-2">
-                    <Input 
-                      placeholder="Add a skill"
-                      className="bg-muted border text-foreground"
-                      value={newSkill}
-                      onChange={(e) => setNewSkill(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && handleAddSkill()}
-                    />
-                    <Button onClick={handleAddSkill} className="bg-emerald-600">Add</Button>
-                  </div>
+                  <MultipleSelector
+                    value={profileData.skills.map(s => ({ value: s, label: s }))}
+                    onChange={(options) => setProfileData({ ...profileData, skills: options.map(o => o.value) })}
+                    onSearch={searchSkills}
+                    placeholder="Search or type a skill..."
+                    delay={200}
+                    creatable
+                    loadingIndicator={<div className="py-2 text-center text-sm text-muted-foreground">Searching...</div>}
+                    emptyIndicator={<div className="py-2 text-center text-sm text-muted-foreground">No skills found</div>}
+                    className="bg-muted border text-foreground"
+                    badgeClassName="bg-emerald-500/20 text-emerald-400"
+                    hidePlaceholderWhenSelected
+                  />
                 </div>
                 
                 <Button 
@@ -637,24 +611,7 @@ export default function ProfilePage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileChange}
-                  accept=".pdf"
-                  className="hidden"
-                />
-                
-                {!resume ? (
-                  <div 
-                    className="border-2 border-dashed border rounded-lg p-12 text-center cursor-pointer hover:border-emerald-500 transition-colors"
-                    onClick={handleFileUpload}
-                  >
-                    <Upload className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <p className="text-foreground mb-2">Click to upload your resume</p>
-                    <p className="text-muted-foreground text-sm">PDF only (max 5MB)</p>
-                  </div>
-                ) : (
+                {resume?.url ? (
                   <div className="border border rounded-lg p-6">
                     <div className="flex items-center gap-4">
                       <FileText className="h-10 w-10 text-emerald-400" />
@@ -662,24 +619,60 @@ export default function ProfilePage() {
                         <p className="text-foreground font-medium">{resume.name}</p>
                         <p className="text-muted-foreground text-sm">
                           {(resume.size / 1024).toFixed(2)} KB
-                          {!resume.uploaded && ' — uploading...'}
                         </p>
                       </div>
-                      {resume.uploaded ? (
-                        <CheckCircle className="h-6 w-6 text-emerald-400" />
-                      ) : (
-                        <Loader2 className="h-6 w-6 text-emerald-400 animate-spin" />
-                      )}
+                      <CheckCircle className="h-6 w-6 text-emerald-400" />
                     </div>
                     <div className="flex gap-2 mt-4">
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         className="border"
-                        onClick={handleFileUpload}
+                        onClick={() => setResume(null)}
                       >
-                        Replace
+                        <Trash2 className="h-4 w-4 mr-2" /> Remove
                       </Button>
                     </div>
+                  </div>
+                ) : (
+                  <div className="border-2 border-dashed border rounded-lg p-8 text-center">
+                    <Upload className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+                    <p className="text-foreground mb-2">Upload your resume</p>
+                    <p className="text-muted-foreground text-sm mb-4">PDF up to 8MB</p>
+                    <UploadButton<OurFileRouter, "resumeUploader">
+                      endpoint="resumeUploader"
+                      onUploadBegin={() => setUploadingResume(true)}
+                      onClientUploadComplete={async (res) => {
+                        if (res?.[0]) {
+                          setResume({
+                            name: res[0].name || 'Resume.pdf',
+                            size: res[0].size || 0,
+                            uploaded: true,
+                            url: res[0].url,
+                          })
+                          try {
+                            await fetch(`/api/users/resume?email=${encodeURIComponent(email)}`, {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({
+                                fileUrl: res[0].url,
+                                fileName: res[0].name || 'Resume.pdf',
+                                fileSize: res[0].size || 0,
+                              }),
+                            })
+                          } catch {}
+                        }
+                        setUploadingResume(false)
+                      }}
+                      onUploadError={() => setUploadingResume(false)}
+                      appearance={{
+                        button:
+                          "bg-emerald-600 hover:bg-emerald-700 text-white text-sm py-2 px-4 rounded-lg transition-colors",
+                        allowedContent: "text-neutral-500 text-xs mt-1 hidden",
+                      }}
+                      content={{
+                        button: uploadingResume ? 'Uploading...' : 'Choose Resume PDF',
+                      }}
+                    />
                   </div>
                 )}
               </CardContent>

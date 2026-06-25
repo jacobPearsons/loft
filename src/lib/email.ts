@@ -1,5 +1,8 @@
 import { Resend } from "resend"
 import { db } from "@/lib/db"
+import { createLogger } from './logger'
+
+const log = createLogger('email')
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 
@@ -25,7 +28,7 @@ interface EmailOptions {
 
 export async function sendEmail({ to, subject, html }: EmailOptions) {
   if (!resend) {
-    console.log("Resend not configured, skipping email:", { to, subject })
+    log.warn("Resend not configured, skipping email", { to, subject })
     return { success: false, error: "Resend not configured" }
   }
 
@@ -38,7 +41,7 @@ export async function sendEmail({ to, subject, html }: EmailOptions) {
     })
     return { success: true, data }
   } catch (error) {
-    console.error("Email error:", error)
+    log.error("Email error", error)
     return { success: false, error }
   }
 }

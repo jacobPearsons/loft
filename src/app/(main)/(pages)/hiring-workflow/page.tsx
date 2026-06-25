@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import {
   useHiringWorkflow,
@@ -15,24 +15,24 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Application, ApplicationStatus, HiringStage } from '@/features/hiring-workflow/types'
 import { cn } from '@/lib/utils'
+import Link from 'next/link'
 import {
   Briefcase,
   Users,
-  TrendingUp,
   Clock,
   CheckCircle,
   XCircle,
-  ArrowRight,
   FileText,
   User,
-  TestTube,
   Code,
-  Shield,
   Mail,
-  PartyPopper,
-  GraduationCap,
-  Loader2
+  Loader2,
+  Calendar
 } from 'lucide-react'
+import { createLogger } from '@/lib/logger'
+import { ScheduleInterviewModal } from '@/components/forms/ScheduleInterviewModal'
+
+const log = createLogger('hiring-workflow')
 
 
 interface JobOption {
@@ -47,6 +47,9 @@ export default function HiringWorkflowPage() {
   const [selectedJobId, setSelectedJobId] = useState<number | null>(null)
   const [metrics, setMetrics] = useState<any>(null)
   const [metricsLoading, setMetricsLoading] = useState(false)
+  const [showInterviewModal, setShowInterviewModal] = useState(false)
+  const [interviewAppId, setInterviewAppId] = useState<number | null>(null)
+  const [notesModal, setNotesModal] = useState<{ open: boolean; appId: number; notes: string }>({ open: false, appId: 0, notes: '' })
 
   const {
     applications,
@@ -55,13 +58,16 @@ export default function HiringWorkflowPage() {
     transitionStage,
   } = useHiringWorkflow({ jobId: selectedJobId || undefined })
 
+  const initialJobSet = useRef(false)
+
   useEffect(() => {
     fetch('/api/companies/jobs')
       .then(r => r.json())
       .then(data => {
         const jobList = Array.isArray(data) ? data : []
         setJobs(jobList)
-        if (jobList.length > 0 && !selectedJobId) {
+        if (jobList.length > 0 && !initialJobSet.current) {
+          initialJobSet.current = true
           setSelectedJobId(jobList[0].id)
         }
       })
@@ -121,7 +127,7 @@ export default function HiringWorkflowPage() {
     try {
       await transitionStage(id, status)
     } catch (err) {
-      console.error('Failed to update status:', err)
+      log.error('Failed to update status', err)
     }
   }
 
@@ -136,7 +142,7 @@ export default function HiringWorkflowPage() {
       })
     } catch (err) {
       setShortlisted(prev => ({ ...prev, [appId]: !newValue }))
-      console.error('Failed to toggle shortlist:', err)
+      log.error('Failed to toggle shortlist', err)
     }
   }
 
@@ -144,12 +150,12 @@ export default function HiringWorkflowPage() {
     <div className="min-h-screen bg-background">
       <div className="bg-card border-b border">
         <div className="container px-4 py-8">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold text-foreground mb-2">Hiring Workflow</h1>
               <p className="text-muted-foreground">Manage your hiring pipeline from application to onboarding</p>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
               <select
                 value={selectedJobId?.toString() || ''}
                 onChange={(e) => setSelectedJobId(parseInt(e.target.value))}
@@ -160,10 +166,12 @@ export default function HiringWorkflowPage() {
                   <option key={job.id} value={job.id.toString()}>{job.title}</option>
                 ))}
               </select>
-              <Button className="bg-emerald-600 hover:bg-emerald-700">
-                <Briefcase className="w-4 h-4 mr-2" />
-                Post New Job
-              </Button>
+              <Link href="/jobs/create">
+                <Button className="bg-emerald-600 hover:bg-emerald-700 w-full sm:w-auto">
+                  <Briefcase className="w-4 h-4 mr-2" />
+                  Post New Job
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
@@ -208,7 +216,7 @@ export default function HiringWorkflowPage() {
               ))}
             </div>
 
-            <div className="flex gap-2 mb-6 border-b border">
+            <div className="flex gap-2 mb-6 border-b border overflow-x-auto">
               {[
                 { id: 'pipeline', label: 'Pipeline' },
                 { id: 'applications', label: 'Applications' },
@@ -409,10 +417,64 @@ export default function HiringWorkflowPage() {
                     Reject
                   </Button>
                 )}
-                <Button variant="outline" className="border">Add Notes</Button>
+                {selectedApplication.status !== 'REJECTED' && selectedApplication.status !== 'HIRED' && (
+                  <Button variant="outline" className="border" onClick={() => {
+                    setInterviewAppId(selectedApplication.id)
+                    setShowInterviewModal(true)
+                  }}>
+                    <Calendar className="w-4 h-4 mr-2" />
+                    Schedule Interview
+                  </Button>
+                )}
+                <Button variant="outline" className="border" onClick={() => {
+                  setNotesModal({ 
+                    open: true, 
+                    appId: selectedApplication.id, 
+                    notes: selectedApplication.employerNotes || '' 
+                  })
+                }}>Add Notes</Button>
               </div>
             </div>
           </motion.div>
+        </div>
+      )}
+
+      <ScheduleInterviewModal
+        applicationId={interviewAppId || 0}
+        open={showInterviewModal}
+        onClose={() => { setShowInterviewModal(false); setInterviewAppId(null) }}
+        onScheduled={() => { /* refetch will happen on next render */ }}
+      />
+
+      {notesModal.open && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setNotesModal(n => ({ ...n, open: false }))} />
+          <div className="relative bg-card border border rounded-xl max-w-lg w-full p-6">
+            <h3 className="text-lg font-bold text-foreground mb-4">Application Notes</h3>
+            <textarea
+              value={notesModal.notes}
+              onChange={(e) => setNotesModal(n => ({ ...n, notes: e.target.value }))}
+              rows={6}
+              className="w-full bg-muted border text-foreground rounded-md px-3 py-2 text-sm mb-4"
+              placeholder="Add your notes about this candidate..."
+            />
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={() => setNotesModal(n => ({ ...n, open: false }))} className="flex-1">Cancel</Button>
+              <Button
+                className="bg-emerald-600 hover:bg-emerald-700 flex-1"
+                onClick={async () => {
+                  await fetch(`/api/applications/${notesModal.appId}/notes`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ notes: notesModal.notes }),
+                  })
+                  setNotesModal(n => ({ ...n, open: false }))
+                }}
+              >
+                Save Notes
+              </Button>
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -83,11 +83,11 @@ export default function NotificationsPage() {
           </CardHeader>
           <CardContent className="space-y-5">
             {items.map(({ key, label, description, icon: Icon }) => (
-              <div key={key} className="flex items-center justify-between">
-                <div className="flex items-start gap-3">
-                  <Icon className="h-5 w-5 text-muted-foreground mt-0.5" />
-                  <div>
-                    <Label htmlFor={key} className="text-foreground font-medium cursor-pointer">{label}</Label>
+              <div key={key} className="flex items-center justify-between gap-3">
+                <div className="flex items-start gap-3 min-w-0 flex-1">
+                  <Icon className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
+                  <div className="min-w-0">
+                    <Label htmlFor={key} className="text-foreground font-medium cursor-pointer truncate block">{label}</Label>
                     <p className="text-sm text-muted-foreground">{description}</p>
                   </div>
                 </div>

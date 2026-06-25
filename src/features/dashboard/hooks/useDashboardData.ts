@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import type { AuthUser } from '@/features/auth/types';
 
@@ -64,41 +64,47 @@ export interface DashboardData {
   };
 }
 
-function isProfileComplete(user: AuthUser | null): DashboardData['profileCompletion'] {
+export function isProfileComplete(user: AuthUser | null, profile?: any): DashboardData['profileCompletion'] {
   const hasBasicInfo = !!(user?.firstName && user?.lastName);
+  const hasResume = !!(profile?.resume?.fileUrl || profile?.resume?.isUploaded);
+  const hasEnglishTest = !!(profile?.englishTestScore || profile?.englishTestLevel);
+  const hasWorkExperience = !!(profile?.profile?.workExperience?.length > 0);
   return {
     basicInfo: hasBasicInfo,
-    resume: false,
-    englishTest: false,
-    workExperience: false,
+    resume: hasResume,
+    englishTest: hasEnglishTest,
+    workExperience: hasWorkExperience,
   };
 }
 
-function calculateProfileProgress(completion: DashboardData['profileCompletion']): number {
+export function calculateProfileProgress(completion: DashboardData['profileCompletion']): number {
   const fields = Object.values(completion);
   const completed = fields.filter(Boolean).length;
   return Math.round((completed / fields.length) * 100);
 }
+
+const STALE_TIME = 30000
 
 export function useDashboardData() {
   const { user, isAuthenticated } = useAuth();
   const [data, setData] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const lastFetch = useRef(0)
 
   const [emailVerified, setEmailVerified] = useState(true);
-  const profileCompletion = useMemo(() => isProfileComplete(user), [user]);
+  const [profileData, setProfileData] = useState<any>(null);
+  const profileCompletion = useMemo(() => isProfileComplete(user, profileData), [user, profileData]);
   const profileProgress = calculateProfileProgress(profileCompletion);
 
   const fetchDashboardData = useCallback(async () => {
     if (!isAuthenticated || !user) {
-      setData(null);
-      setIsLoading(false);
       return;
     }
 
     setIsLoading(true);
     setError(null);
+    lastFetch.current = Date.now()
 
     try {
       const email = user.email || ''
@@ -112,8 +118,11 @@ export function useDashboardData() {
 
       const applications = applicationsRes.ok ? await applicationsRes.json() : []
       const profile = profileRes.ok ? await profileRes.json() : null
-      if (profile && typeof profile.emailVerified === 'boolean') {
-        setEmailVerified(profile.emailVerified)
+      if (profile) {
+        if (typeof profile.emailVerified === 'boolean') {
+          setEmailVerified(profile.emailVerified)
+        }
+        setProfileData(profile)
       }
       const jobsData = jobsRes.ok ? await jobsRes.json() : { jobs: [] }
       const savedJobsData: SavedJobItem[] = savedJobsRes.ok ? await savedJobsRes.json() : []
@@ -143,6 +152,8 @@ export function useDashboardData() {
         publishedAt: job.publishedAt || '',
       }))
 
+      const computedProfileCompletion = isProfileComplete(user, profile)
+
       const dashboardData: DashboardData = {
         stats: {
           profileViews: profile?.viewsCount ?? 0,
@@ -154,7 +165,7 @@ export function useDashboardData() {
         upcomingInterviews: interviewApps.slice(0, 3),
         currentJobs,
         savedJobs: savedJobsData,
-        profileCompletion,
+        profileCompletion: computedProfileCompletion,
       };
 
       setData(dashboardData);
@@ -163,11 +174,21 @@ export function useDashboardData() {
     } finally {
       setIsLoading(false);
     }
-  }, [isAuthenticated, user, profileCompletion]);
+  }, [isAuthenticated, user]);
 
   useEffect(() => {
     fetchDashboardData();
   }, [fetchDashboardData]);
+
+  useEffect(() => {
+    const handleFocus = () => {
+      if (Date.now() - lastFetch.current > STALE_TIME) {
+        fetchDashboardData()
+      }
+    }
+    window.addEventListener('focus', handleFocus)
+    return () => window.removeEventListener('focus', handleFocus)
+  }, [fetchDashboardData])
 
   const needsProfileCompletion = profileProgress < 100;
 

@@ -1,11 +1,14 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Bell, X, CheckCheck, Loader2 } from 'lucide-react'
+import { Bell, CheckCheck, Loader2 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import Link from 'next/link'
+import { createLogger } from '@/lib/logger'
+
+const log = createLogger('NotificationCenter')
 
 interface Notification {
   id: number
@@ -19,6 +22,7 @@ interface Notification {
 }
 
 export function NotificationCenter() {
+  const router = useRouter()
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [isOpen, setIsOpen] = useState(false)
@@ -50,7 +54,7 @@ export function NotificationCenter() {
         setUnreadCount(data.unreadCount || 0)
       }
     } catch (err) {
-      console.error('Failed to fetch notifications:', err)
+      log.error('Failed to fetch notifications', err)
     } finally {
       setLoading(false)
     }
@@ -144,7 +148,7 @@ export function NotificationCenter() {
                     <div
                       key={n.id}
                       className={`p-4 hover:bg-muted/50 transition-colors cursor-pointer ${!n.isRead ? 'bg-emerald-500/5' : ''}`}
-                      onClick={() => { markRead(n.id); if (n.link) window.location.href = n.link }}
+                      onClick={() => { markRead(n.id); if (n.link) router.push(n.link) }}
                     >
                       <div className="flex items-start gap-3">
                         <span className="text-lg mt-0.5">{typeIcons[n.type] || '🔔'}</span>

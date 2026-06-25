@@ -8,6 +8,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import MultipleSelector, { Option } from '@/components/ui/multiple-selector';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -74,35 +75,24 @@ export function JobForm({
     deadline: initialData?.deadline,
   });
 
-  const [requiredSkillInput, setRequiredSkillInput] = useState('');
-  const [preferredSkillInput, setPreferredSkillInput] = useState('');
+  const searchSkills = async (value: string): Promise<Option[]> => {
+    if (!value) return []
+    try {
+      const res = await fetch(`/api/skills/search?q=${encodeURIComponent(value)}`)
+      const data = await res.json()
+      return data.map((s: { id: number; name: string }) => ({ value: s.name, label: s.name }))
+    } catch {
+      return []
+    }
+  }
   const [showPreview, setShowPreview] = useState(false);
 
   const handleChange = (field: keyof CreateJobPayload, value: unknown) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const addRequiredSkill = () => {
-    if (requiredSkillInput.trim()) {
-      handleChange('requiredSkills', [...(formData.requiredSkills || []), requiredSkillInput.trim()]);
-      setRequiredSkillInput('');
-    }
-  };
-
-  const removeRequiredSkill = (skill: string) => {
-    handleChange('requiredSkills', formData.requiredSkills?.filter(s => s !== skill));
-  };
-
-  const addPreferredSkill = () => {
-    if (preferredSkillInput.trim()) {
-      handleChange('preferredSkills', [...(formData.preferredSkills || []), preferredSkillInput.trim()]);
-      setPreferredSkillInput('');
-    }
-  };
-
-  const removePreferredSkill = (skill: string) => {
-    handleChange('preferredSkills', formData.preferredSkills?.filter(s => s !== skill));
-  };
+  const toOptions = (skills: string[]): Option[] =>
+    skills.map(s => ({ value: s, label: s }));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -367,62 +357,32 @@ export function JobForm({
           <CardContent className="space-y-4">
             <div>
               <Label className="text-foreground/80">Required Skills</Label>
-              <div className="flex gap-2 mt-1">
-                <Input
-                  value={requiredSkillInput}
-                  onChange={(e) => setRequiredSkillInput(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addRequiredSkill())}
-                  placeholder="Add a skill and press Enter"
-                  className="bg-muted border-border text-foreground"
-                />
-                <Button type="button" onClick={addRequiredSkill} variant="outline" className="border-border">
-                  <Plus className="w-4 h-4" />
-                </Button>
-              </div>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {formData.requiredSkills?.map(skill => (
-                  <Badge key={skill} variant="secondary" className="bg-emerald-500/20 text-emerald-400">
-                    {skill}
-                    <button
-                      type="button"
-                      onClick={() => removeRequiredSkill(skill)}
-                      className="ml-1 hover:text-red-400"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </Badge>
-                ))}
-              </div>
+              <MultipleSelector
+                value={toOptions(formData.requiredSkills || [])}
+                onChange={(options) => handleChange('requiredSkills', options.map(o => o.value))}
+                onSearch={searchSkills}
+                placeholder="Search or type a skill..."
+                delay={200}
+                creatable
+                className="bg-muted border-border text-foreground mt-1"
+                badgeClassName="bg-emerald-500/20 text-emerald-400"
+                hidePlaceholderWhenSelected
+              />
             </div>
 
             <div>
               <Label className="text-foreground/80">Preferred Skills</Label>
-              <div className="flex gap-2 mt-1">
-                <Input
-                  value={preferredSkillInput}
-                  onChange={(e) => setPreferredSkillInput(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addPreferredSkill())}
-                  placeholder="Add a skill and press Enter"
-                  className="bg-muted border-border text-foreground"
-                />
-                <Button type="button" onClick={addPreferredSkill} variant="outline" className="border-border">
-                  <Plus className="w-4 h-4" />
-                </Button>
-              </div>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {formData.preferredSkills?.map(skill => (
-                  <Badge key={skill} variant="secondary" className="bg-blue-500/20 text-blue-400">
-                    {skill}
-                    <button
-                      type="button"
-                      onClick={() => removePreferredSkill(skill)}
-                      className="ml-1 hover:text-red-400"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </Badge>
-                ))}
-              </div>
+              <MultipleSelector
+                value={toOptions(formData.preferredSkills || [])}
+                onChange={(options) => handleChange('preferredSkills', options.map(o => o.value))}
+                onSearch={searchSkills}
+                placeholder="Search or type a skill..."
+                delay={200}
+                creatable
+                className="bg-muted border-border text-foreground mt-1"
+                badgeClassName="bg-blue-500/20 text-blue-400"
+                hidePlaceholderWhenSelected
+              />
             </div>
           </CardContent>
         </Card>

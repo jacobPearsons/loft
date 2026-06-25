@@ -8,8 +8,10 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Building, Loader2, ArrowLeft, Save } from 'lucide-react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 
 export default function CompanyProfilePage() {
   const { data: session } = useSession()
@@ -67,7 +69,10 @@ export default function CompanyProfilePage() {
         body: JSON.stringify(form),
       })
       if (res.ok) {
+        toast.success('Company profile saved successfully!')
         router.push('/employer/dashboard')
+      } else {
+        toast.error('Failed to save company profile')
       }
     } finally {
       setSaving(false)
@@ -92,7 +97,14 @@ export default function CompanyProfilePage() {
         <Card className="bg-card border">
           <CardHeader>
             <CardTitle className="text-foreground flex items-center gap-3 text-2xl">
-              <Building className="w-6 h-6 text-emerald-400" />
+              <div className="relative w-10 h-10">
+                <Image
+                  src="/images/Company%20Avatar%20Placeholder.png"
+                  alt=""
+                  fill
+                  className="object-contain opacity-80"
+                />
+              </div>
               Company Profile
             </CardTitle>
           </CardHeader>

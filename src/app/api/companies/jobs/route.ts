@@ -1,28 +1,30 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
 import { db } from "@/lib/db"
+import { requireCompanyMember } from "@/lib/company"
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url)
-  const email = searchParams.get("email")
-
-  const userEmail = email || (await getServerSession(authOptions))?.user?.email
-  
-  if (!userEmail) {
+  let companySession
+  try {
+    companySession = await requireCompanyMember()
+  } catch {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  const user = await db.user.findUnique({
-    where: { email: userEmail as string },
-  })
+  const { searchParams } = new URL(request.url)
+  const status = searchParams.get("status")
+  const assignedToMe = searchParams.get("assignedToMe") === "true"
 
-  if (!user) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 })
-  }
+  const where: any = { companyId: companySession.companyId }
+  if (status) where.status = status
+  if (assignedToMe) where.employerId = companySession.userId
 
   const jobs = await db.job.findMany({
-    where: { employerId: user.clerkId },
+    where,
+    include: {
+      employer: {
+        select: { companyName: true, companyLogo: true, city: true, contactEmail: true },
+      },
+    },
     orderBy: { createdAt: "desc" },
   })
 

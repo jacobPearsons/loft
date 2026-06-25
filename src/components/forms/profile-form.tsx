@@ -1,6 +1,6 @@
 'use client'
 
-import React, { use, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -18,8 +18,8 @@ import { Button } from '../ui/button'
 import { Loader2, Save } from 'lucide-react'
 
 type Props = {
-  user: any
-  onUpdate?: any
+  user: { name: string | null; email: string | null } | null
+  onUpdate?: (name: string) => Promise<void>
 }
 
 const ProfileForm = ({ user, onUpdate }: Props) => {
@@ -28,8 +28,8 @@ const ProfileForm = ({ user, onUpdate }: Props) => {
     mode: 'onChange',
     resolver: zodResolver(EditUserProfileSchema),
     defaultValues: {
-      name: user.name,
-      email: user.email,
+      name: user?.name ?? '',
+      email: user?.email ?? '',
     },
   })
 
@@ -37,12 +37,12 @@ const ProfileForm = ({ user, onUpdate }: Props) => {
     values: z.infer<typeof EditUserProfileSchema>
   ) => {
     setIsLoading(true)
-    await onUpdate(values.name)
+    await onUpdate?.(values.name)
     setIsLoading(false)
   }
 
   useEffect(() => {
-    form.reset({ name: user.name, email: user.email })
+    form.reset({ name: user?.name ?? '', email: user?.email ?? '' })
   }, [user, form])
 
   return (

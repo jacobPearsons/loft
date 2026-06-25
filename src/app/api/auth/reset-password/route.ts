@@ -8,10 +8,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import * as authService from '@/features/auth/services/authService'
 import type { ResetPasswordInput } from '@/features/auth/types'
 import { rateLimit } from '@/lib/rate-limit'
+import { createLogger } from '@/lib/logger'
+
+const log = createLogger('auth:reset-password')
 
 export async function POST(request: NextRequest) {
   const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
-  const { success } = rateLimit(`reset:${ip}`, 3, 60000)
+  const { success } = await rateLimit(`reset:${ip}`, 3, 60000)
   if (!success) {
     return NextResponse.json(
       { success: false, message: 'Too many requests. Try again later.' },
@@ -43,7 +46,7 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     )
   } catch (error) {
-    console.error('Reset password error:', error)
+    log.error('Reset password error', error)
     return NextResponse.json(
       { success: false, message: 'Internal server error' },
       { status: 500 }

@@ -29,6 +29,7 @@ export function LoginForm({ onSwitchToRegister, onSwitchToResetPassword }: Login
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [rememberMe, setRememberMe] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -44,6 +45,7 @@ export function LoginForm({ onSwitchToRegister, onSwitchToResetPassword }: Login
     const result = await signIn('credentials', {
       email,
       password,
+      rememberMe: rememberMe ? 'true' : 'false',
       redirect: false,
     })
 
@@ -171,7 +173,16 @@ export function LoginForm({ onSwitchToRegister, onSwitchToResetPassword }: Login
             />
           </div>
 
-          <div className="flex items-center justify-end">
+          <div className="flex items-center justify-between">
+            <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="rounded border-border bg-transparent accent-emerald-400"
+              />
+              Remember me for 30 days
+            </label>
             <button
               type="button"
               onClick={onSwitchToResetPassword}

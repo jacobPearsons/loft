@@ -84,6 +84,7 @@ export type EditorActions =
       }
     }
 
+// TODO: Unused - not referenced anywhere. Remove if confirmed.
 export const nodeMapper: Record<string, string> = {
   Notion: 'notionNode',
   Slack: 'slackNode',

@@ -5,6 +5,8 @@ declare module "next-auth" {
     user: {
       id: string
       isEmployer: boolean
+      companyId?: number
+      companyRole?: "ADMIN" | "EMPLOYER"
     } & DefaultSession["user"]
   }
 
@@ -18,5 +20,7 @@ declare module "next-auth/jwt" {
     isEmployer?: boolean
     id?: number
     needsOnboarding?: boolean
+    companyId?: number
+    companyRole?: "ADMIN" | "EMPLOYER"
   }
 }

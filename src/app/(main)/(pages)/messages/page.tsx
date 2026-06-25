@@ -4,7 +4,12 @@ import { useEffect, useState, useRef, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import Image from 'next/image'
 import { Loader2, Send, ArrowLeft, MessageSquare } from 'lucide-react'
+import { createLogger } from '@/lib/logger'
+import { toast } from 'sonner'
+
+const log = createLogger('messages')
 
 function timeAgo(dateStr: string) {
   const diff = Date.now() - new Date(dateStr).getTime()
@@ -92,7 +97,7 @@ export default function MessagesPage() {
         setMessages(data)
       }
     } catch (err) {
-      console.error('Failed to fetch messages:', err)
+      log.error('Failed to fetch messages', err)
     } finally {
       setLoading(false)
     }
@@ -100,7 +105,7 @@ export default function MessagesPage() {
 
   useEffect(() => {
     fetchMessages()
-    const interval = setInterval(fetchMessages, 30000)
+    const interval = setInterval(fetchMessages, 10000)
     return () => clearInterval(interval)
   }, [fetchMessages])
 
@@ -128,24 +133,41 @@ export default function MessagesPage() {
   const handleSend = async () => {
     if (!newMessage.trim() || !activeConv || sending) return
 
+    const content = newMessage.trim()
+    const optimisticMsg: Message = {
+      id: Date.now(),
+      content,
+      jobId: activeConv.jobId,
+      readAt: null,
+      createdAt: new Date().toISOString(),
+      isOwn: true,
+      sender: { id: currentUserId || '', name: 'You', firstName: null, lastName: null, profileImage: null },
+      receiver: activeConv.otherUser,
+    }
+
+    setMessages(prev => [...prev, optimisticMsg])
+    setNewMessage('')
     setSending(true)
+
     try {
       const res = await fetch('/api/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           receiverId: activeConv.otherUser.id,
-          content: newMessage.trim(),
+          content,
           jobId: activeConv.jobId,
         }),
       })
 
-      if (res.ok) {
-        setNewMessage('')
-        await fetchMessages()
+      if (!res.ok) {
+        setMessages(prev => prev.filter(m => m.id !== optimisticMsg.id))
+        toast.error('Failed to send message')
       }
     } catch (err) {
-      console.error('Failed to send message:', err)
+      setMessages(prev => prev.filter(m => m.id !== optimisticMsg.id))
+      log.error('Failed to send message', err)
+      toast.error('Failed to send message. Please try again.')
     } finally {
       setSending(false)
     }
@@ -161,6 +183,16 @@ export default function MessagesPage() {
   const openConversation = (key: string) => {
     setActiveConversation(key)
     setShowMobileList(false)
+    setTimeout(() => {
+      const unread = messages.filter(m => {
+        const otherParty = m.isOwn ? m.receiver : m.sender
+        const msgKey = `${m.jobId || 'general'}-${otherParty.id}`
+        return msgKey === key && !m.isOwn && !m.readAt
+      })
+      unread.forEach(msg => {
+        fetch(`/api/messages/${msg.id}/read`, { method: 'POST' }).catch(() => {})
+      })
+    }, 500)
   }
 
   return (
@@ -176,7 +208,14 @@ export default function MessagesPage() {
             </div>
           ) : conversations.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-              <MessageSquare className="w-8 h-8 mb-2 opacity-50" />
+              <div className="relative w-32 h-32 mb-2">
+                <Image
+                  src="/images/No%20Messages.png"
+                  alt="No messages yet"
+                  fill
+                  className="object-contain opacity-50"
+                />
+              </div>
               <p className="text-sm">No conversations yet</p>
               <p className="text-xs mt-1">Messages appear when an employer moves you to Interview stage</p>
             </div>
@@ -285,7 +324,14 @@ export default function MessagesPage() {
         ) : (
           <div className="flex-1 flex items-center justify-center text-muted-foreground">
             <div className="text-center">
-              <MessageSquare className="w-12 h-12 mx-auto mb-3 opacity-30" />
+              <div className="relative w-40 h-40 mx-auto mb-3">
+                <Image
+                  src="/images/No%20Messages.png"
+                  alt="No messages"
+                  fill
+                  className="object-contain opacity-30"
+                />
+              </div>
               <p className="text-sm">Select a conversation to start chatting</p>
             </div>
           </div>

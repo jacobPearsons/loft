@@ -6,6 +6,10 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { createLogger } from '@/lib/logger';
+
+const log = createLogger('useJobManagement');
+
 import {
   JobSummary,
   JobWithRelations,
@@ -71,7 +75,7 @@ export function useJobManagement(filters?: JobFilters) {
       const categories = await getJobCategories();
       setState(prev => ({ ...prev, categories }));
     } catch (error) {
-      console.error('Failed to fetch categories:', error);
+      log.error('Failed to fetch categories', error);
     }
   }, []);
 

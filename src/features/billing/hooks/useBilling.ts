@@ -12,6 +12,9 @@ import {
   upgradeSubscription,
   getPlanLimit,
 } from '../services/billingService'
+import { createLogger } from '@/lib/logger'
+
+const log = createLogger('useBilling')
 
 interface UseBillingState {
   plans: Plan[]
@@ -59,7 +62,7 @@ export const useBilling = (): UseBilling => {
       setCurrentSubscription(subscriptionData)
       setUsage(usageData)
     } catch (err) {
-      console.error('Error fetching billing data:', err)
+      log.error('Error fetching billing data', err)
       setError('Failed to load billing information')
     } finally {
       setLoading(false)
@@ -92,7 +95,7 @@ export const useBilling = (): UseBilling => {
       setError(result.message)
       return false
     } catch (err) {
-      console.error('Error upgrading plan:', err)
+      log.error('Error upgrading plan', err)
       setError('Failed to upgrade subscription')
       return false
     } finally {

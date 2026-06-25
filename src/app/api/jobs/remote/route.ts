@@ -1,24 +1,27 @@
 import { NextRequest, NextResponse } from "next/server"
-import * as fs from "fs"
-import * as path from "path"
+import { db } from "@/lib/db"
 
-const CACHE_FILE = path.join(process.cwd(), "src", "data", "remote-jobs-cache.json")
+const CACHE_KEY = "remote-jobs"
 const CACHE_TTL_MS = 15 * 60 * 1000
 const JOBICY_URL = "https://jobicy.com/api/v2/remote-jobs"
 
-function readCache(): { data: any; timestamp: number } | null {
+async function readCache(): Promise<{ data: any; timestamp: number } | null> {
   try {
-    if (fs.existsSync(CACHE_FILE)) {
-      const raw = fs.readFileSync(CACHE_FILE, "utf-8")
-      return JSON.parse(raw)
-    }
-  } catch {}
-  return null
+    const entry = await db.cacheEntry.findUnique({ where: { key: CACHE_KEY } })
+    if (!entry) return null
+    return { data: entry.data, timestamp: entry.createdAt.getTime() }
+  } catch {
+    return null
+  }
 }
 
-function writeCache(data: any) {
+async function writeCache(data: any) {
   try {
-    fs.writeFileSync(CACHE_FILE, JSON.stringify({ data, timestamp: Date.now() }))
+    await db.cacheEntry.upsert({
+      where: { key: CACHE_KEY },
+      update: { data: data as any, createdAt: new Date(), expiresAt: new Date(Date.now() + CACHE_TTL_MS) },
+      create: { key: CACHE_KEY, data: data as any, expiresAt: new Date(Date.now() + CACHE_TTL_MS) },
+    })
   } catch {}
 }
 
@@ -29,9 +32,9 @@ export async function GET(request: NextRequest) {
   const industry = searchParams.get("industry") || ""
   const tag = searchParams.get("tag") || ""
 
-  const cached = readCache()
+  const cached = await readCache()
   if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
-    let jobs = cached.data
+    let jobs = cached.data as any[]
     if (tag) jobs = jobs.filter((j: any) => (j.jobTitle + " " + j.jobDescription).toLowerCase().includes(tag.toLowerCase()))
     if (geo) jobs = jobs.filter((j: any) => j.jobGeo?.toLowerCase().includes(geo.toLowerCase()))
     if (industry) jobs = jobs.filter((j: any) => j.jobIndustry?.toLowerCase().includes(industry.toLowerCase()))
@@ -49,16 +52,16 @@ export async function GET(request: NextRequest) {
     if (!res.ok) throw new Error(`Jobicy returned ${res.status}`)
     const data = await res.json()
     const jobs = data.jobs || data || []
-    writeCache(jobs)
+    await writeCache(jobs)
     return NextResponse.json({ jobs, source: "live", total: jobs.length })
   } catch {
-    const cached = readCache()
+    const cached = await readCache()
     if (cached) {
       return NextResponse.json({
         jobs: cached.data,
         source: "cache",
         cachedAt: new Date(cached.timestamp).toISOString(),
-        total: cached.data.length,
+        total: (cached.data as any[]).length,
       })
     }
     return NextResponse.json({ jobs: [], source: "none", total: 0 })

@@ -1,14 +1,52 @@
 'use client'
 
+import { useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Search, Briefcase, Users, ArrowRight } from 'lucide-react'
+import Image from 'next/image'
 import Link from 'next/link'
 
 export function HeroSection() {
+  const videoRef = useRef<HTMLVideoElement>(null)
+
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
+    if (mq.matches && videoRef.current) {
+      videoRef.current.pause()
+    }
+  }, [])
+
   return (
     <section className="w-full min-h-[90vh] flex flex-col items-center justify-center relative overflow-hidden bg-neutral-950">
-      {/* Background gradient */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-emerald-900/20 via-neutral-950 to-neutral-950"></div>
+      {/* Video Background */}
+      <video
+        ref={videoRef}
+        autoPlay
+        muted
+        loop
+        playsInline
+        className="absolute inset-0 w-full h-full object-cover opacity-30"
+      >
+        <source src="/Professionals_in_modern_office_202606050752.mp4" type="video/mp4" />
+      </video>
+      
+      {/* Dark overlay for readability */}
+      <div className="absolute inset-0 bg-neutral-950/60"></div>
+      
+      {/* Background gradient accent */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-emerald-900/20 via-transparent to-transparent"></div>
+
+      {/* Decorative background image */}
+      <div className="absolute inset-0 opacity-10">
+        <Image
+          src="/images/Hero%20Background.png"
+          alt=""
+          fill
+          className="object-cover"
+          priority
+          aria-hidden
+        />
+      </div>
       
       <div className="container px-4 md:px-6 relative z-10">
         <div className="flex flex-col items-center text-center space-y-8">
